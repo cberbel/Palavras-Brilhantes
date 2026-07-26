@@ -4,8 +4,12 @@ Ferramenta baseada no paradigma da Anne Fernald (Stanford). Duas figuras lado a 
 uma frase que nomeia uma delas, e a medida de quão rápido e quão consistentemente os
 olhos da criança vão para a figura certa.
 
+**No ar:** https://palavras-brilhantes.vercel.app — apresentador, câmera para celular e
+codificador. Nenhum dado sai do aparelho; a análise continua sendo local.
+
 **Para gravar e testar agora:** [COMO-TESTAR.md](COMO-TESTAR.md) — passo a passo de
-20 minutos, com os três atalhos `.cmd` da raiz do projeto.
+20 minutos, com os três atalhos `.cmd` da raiz do projeto. Pelo site, pule direto para
+o passo 1 abrindo o endereço acima em vez de rodar o servidor local.
 
 **Antes de usar com crianças, leia o [PLANO.md](PLANO.md).** Ele explica o que o teste
 mede, o que ele não é, e o que fazer para que a medida seja válida.
