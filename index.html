@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111">
+<title>Teste de processamento linguístico — LWL</title>
+<style>
+  :root{--bg:#111;--panel:#1c1c1e;--ink:#f2f2f2;--muted:#9aa;--accent:#4da3ff;--warn:#ffb340}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5}
+  #wrap{max-width:720px;margin:0 auto;
+    padding:22px calc(18px + env(safe-area-inset-left)) calc(30px + env(safe-area-inset-bottom))}
+  h1{font-size:22px;margin:0 0 4px}
+  p.sub{color:var(--muted);font-size:14px;margin:0 0 20px}
+  a.cartao{display:block;text-decoration:none;color:inherit;background:var(--panel);
+    border:1px solid #2e2e32;border-radius:14px;padding:15px 17px;margin-bottom:12px}
+  a.cartao:hover{border-color:var(--accent)}
+  a.cartao h2{margin:0 0 3px;font-size:17px;color:var(--accent)}
+  a.cartao .quem{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;
+    text-transform:uppercase;color:#04203f;background:var(--accent);
+    border-radius:6px;padding:2px 7px;margin-bottom:7px}
+  a.cartao p{margin:0;font-size:13.5px;color:var(--muted)}
+  .aviso{background:#3a2a10;border:1px solid var(--warn);color:#ffdca8;
+    border-radius:12px;padding:12px 14px;font-size:13.5px;margin:20px 0}
+  .aviso b{color:var(--warn)}
+  .aviso table{border-collapse:collapse;margin:9px 0;font-size:13px;width:100%;max-width:330px}
+  .aviso td{padding:3px 10px 3px 0;font-variant-numeric:tabular-nums}
+  .aviso td:last-child{text-align:right;font-weight:700}
+  .aviso .bom{color:#8fd694} .aviso .ruim{color:#ff9a9a}
+  details{background:var(--panel);border-radius:12px;padding:11px 14px;margin-top:14px}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px}
+  details p,details li{font-size:13.5px;color:var(--muted)}
+  code{background:#2a2a2e;border-radius:5px;padding:1px 5px;font-size:12.5px}
+  footer{color:#666;font-size:12.5px;margin-top:26px;border-top:1px solid #2a2a2e;padding-top:14px}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <h1>Teste de eficiência de processamento linguístico</h1>
+  <p class="sub">Paradigma <i>looking-while-listening</i> (Fernald, Stanford).
+    Duas figuras, uma frase que nomeia uma delas, e a medida de quão rápido os olhos
+    vão para a certa.</p>
+
+  <a class="cartao" href="apresentador/index.html">
+    <span class="quem">computador ou tablet</span>
+    <h2>Apresentador →</h2>
+    <p>Mostra as figuras, toca as frases e marca cada trial com um bipe de
+       sincronização. Pode gravar pela webcam ou deixar a gravação para o celular.</p>
+  </a>
+
+  <a class="cartao" href="camera/index.html">
+    <span class="quem">celular</span>
+    <h2>Câmera →</h2>
+    <p>Filma o rosto da criança enquanto as figuras aparecem na outra tela.
+       Costuma dar imagem e taxa de quadros melhores que a webcam do notebook.</p>
+  </a>
+
+  <a class="cartao" href="codificador/index.html">
+    <span class="quem">computador</span>
+    <h2>Codificador de olhar →</h2>
+    <p>Codificação manual quadro a quadro e cálculo de concordância com o
+       codificador automático. É o padrão-ouro de validação.</p>
+  </a>
+
+  <div class="aviso">
+    <b>O celular é a câmera, nunca a tela.</b> O que decide é a separação angular entre
+    as duas figuras: quanto maior, mais claro fica o movimento dos olhos para quem
+    codifica. Medido neste layout:
+    <table>
+      <tr><td>celular 6"</td><td>a 45 cm</td><td class="ruim">4,3°</td></tr>
+      <tr><td>tablet 10"</td><td>a 55 cm</td><td class="bom">11,2°</td></tr>
+      <tr><td>notebook 15"</td><td>a 55 cm</td><td class="bom">17,8°</td></tr>
+      <tr><td>TV 40"</td><td>a 90 cm</td><td class="bom">27,6°</td></tr>
+    </table>
+    Abaixo de uns 10° a distinção esquerda/direita fica frágil. Por isso o celular
+    grava, e as figuras aparecem numa tela maior.
+  </div>
+
+  <details>
+    <summary>Como as peças se encaixam</summary>
+    <p>O apresentador agenda o bipe e a frase no mesmo relógio de áudio, então o
+      intervalo entre eles é exato. Seja a webcam ou o celular que grave, o bipe fica na
+      trilha de áudio do vídeo — e é ele que ancora cada palavra ao instante certo da
+      gravação. Nada depende de quando a gravação começou.</p>
+    <p>Ao final você tem dois arquivos: o <b>vídeo</b> e o <b>_eventos.csv</b>. Os dois
+      vão para a mesma pasta no computador, e o processamento local
+      (<code>3-PROCESSAR SESSAO.cmd</code>) calcula tempo de reação e acurácia.</p>
+  </details>
+
+  <details>
+    <summary>Privacidade</summary>
+    <p>Estas páginas são estáticas: <b>nenhum vídeo, áudio ou dado sai do aparelho.</b>
+      A gravação fica na memória do navegador até você baixá-la, e o processamento é
+      feito no seu computador, sem nuvem e sem serviço externo. Não há analytics nem
+      qualquer envio.</p>
+    <p>Vídeo de rosto de criança é dado pessoal de menor. Use com consentimento
+      assinado dos responsáveis, com identificadores anônimos, e apague quando não
+      precisar mais.</p>
+  </details>
+
+  <footer>
+    Instrumento de pesquisa, não avaliação diagnóstica. Uma medida isolada de uma
+    criança tem variabilidade alta e não deve ser interpretada sozinha.
+  </footer>
+</div>
+</body>
+</html>

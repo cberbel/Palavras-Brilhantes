@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codificador manual de olhar — LWL</title>
+<style>
+  :root { --bg:#111; --panel:#1c1c1e; --ink:#f2f2f2; --muted:#9aa; --accent:#4da3ff;
+          --esq:#e8703a; --dir:#4da3ff; --fora:#777; --inc:#c060c0; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  #wrap{max-width:1040px;margin:0 auto;padding:16px}
+  h1{font-size:19px;margin:0 0 2px}
+  p.sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+  fieldset{border:1px solid #333;border-radius:12px;margin:0 0 14px;padding:12px 14px}
+  legend{color:var(--accent);font-weight:600;padding:0 6px}
+  input,select,button{background:var(--panel);color:var(--ink);border:1px solid #333;
+    border-radius:8px;padding:7px 10px;font-size:14px}
+  button{cursor:pointer;font-weight:600;background:#2a2a2e}
+  button.pri{background:var(--accent);color:#04203f;border-color:transparent}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  video{width:100%;max-height:52vh;background:#000;border-radius:10px;display:block}
+  #barra{width:100%;height:34px;border-radius:6px;background:#222;margin-top:8px;display:block}
+  .teclas{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .tecla{padding:8px 14px;border-radius:8px;font-size:14px;font-weight:600;border:2px solid transparent}
+  .tecla.on{border-color:#fff}
+  .k-esq{background:var(--esq);color:#231} .k-dir{background:var(--dir);color:#031}
+  .k-fora{background:var(--fora)} .k-inc{background:var(--inc)}
+  table{border-collapse:collapse;font-size:13px;width:100%}
+  td,th{border-bottom:1px solid #2c2c2e;padding:5px 8px;text-align:left}
+  .num{font-variant-numeric:tabular-nums}
+  small.hint{color:var(--muted);display:block;margin-top:6px;font-size:12px}
+  #res{white-space:pre-line;font-size:13px;color:var(--muted);margin-top:8px}
+  kbd{background:#2a2a2e;border:1px solid #444;border-radius:5px;padding:1px 6px;font-size:12px}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <h1>Codificador manual de olhar</h1>
+  <p class="sub">Padrão-ouro do projeto. Serve para validar o codificador automático e
+    para o teste de espelhamento. Você <b>não</b> vê qual figura era o alvo — a
+    codificação é cega, como manda o protocolo.</p>
+
+  <fieldset>
+    <legend>1. Vídeo</legend>
+    <div class="row">
+      <input type="file" id="arq" accept="video/*">
+      <label>fps <input type="number" id="fps" value="30" min="5" max="120" style="width:80px"></label>
+      <span id="info" class="num" style="color:var(--muted);font-size:13px"></span>
+    </div>
+    <small class="hint">O fps precisa bater com o da gravação, senão os tempos saem errados.
+      O apresentador mostra a taxa efetiva na tela de configuração.</small>
+  </fieldset>
+
+  <video id="v" controls></video>
+  <canvas id="barra"></canvas>
+
+  <div class="teclas">
+    <span class="tecla k-esq" id="t-left">A — esquerda</span>
+    <span class="tecla k-dir" id="t-right">D — direita</span>
+    <span class="tecla k-fora" id="t-away">X — fora</span>
+    <span class="tecla k-inc" id="t-inc">? — incerto</span>
+  </div>
+  <small class="hint">
+    <kbd>←</kbd><kbd>→</kbd> um quadro · <kbd>Shift</kbd>+seta dez quadros ·
+    <kbd>Espaço</kbd> reproduz/pausa · <kbd>Backspace</kbd> desfaz a última marca.
+    A marca vale <b>do quadro atual em diante</b>, até a próxima — você só marca quando
+    o olhar muda, não quadro a quadro.
+  </small>
+
+  <fieldset style="margin-top:14px">
+    <legend>2. Marcas</legend>
+    <div class="row">
+      <button id="exportar" class="pri">Baixar anotacoes_manuais.csv</button>
+      <button id="limpar">Limpar tudo</button>
+      <span id="contagem" style="color:var(--muted);font-size:13px"></span>
+    </div>
+    <div style="max-height:150px;overflow:auto;margin-top:10px">
+      <table id="tab"><thead><tr><th>tempo</th><th>olhar</th></tr></thead><tbody></tbody></table>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>3. Concordância com o automático</legend>
+    <div class="row">
+      <label>manual <input type="file" id="cmp_man" accept=".csv"></label>
+      <label>automático <input type="file" id="cmp_aut" accept=".csv"></label>
+      <button id="comparar">Comparar</button>
+    </div>
+    <div id="res"></div>
+  </fieldset>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const v = $('v');
+let marcas = [];          // {t_ms, olhar} ordenado por tempo
+let dur = 0;
+
+const CORES = {left:'#e8703a', right:'#4da3ff', away:'#777', incerto:'#c060c0'};
+const passo = () => 1 / Math.max(1, +$('fps').value);
+
+/* ---------- vídeo ---------- */
+$('arq').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  v.src = URL.createObjectURL(f);
+  marcas = []; render();
+  v.addEventListener('loadedmetadata', () => {
+    dur = v.duration;
+    $('info').textContent = `${dur.toFixed(1)} s · ${Math.round(dur*(+$('fps').value))} quadros`;
+    render();
+  }, {once:true});
+});
+
+function marca(olhar){
+  if (!v.src) return;
+  const t = Math.round(v.currentTime * 1000);
+  marcas = marcas.filter(m => m.t_ms !== t);
+  marcas.push({t_ms:t, olhar});
+  marcas.sort((a,b) => a.t_ms - b.t_ms);
+  render();
+}
+
+function pisca(id){
+  const el = $(id); el.classList.add('on');
+  setTimeout(()=> el.classList.remove('on'), 180);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  const k = e.key.toLowerCase();
+  const d = e.shiftKey ? 10 : 1;
+  if (k === 'a'){ marca('left');  pisca('t-left');  e.preventDefault(); }
+  else if (k === 'd'){ marca('right'); pisca('t-right'); e.preventDefault(); }
+  else if (k === 'x'){ marca('away');  pisca('t-away');  e.preventDefault(); }
+  else if (k === '?' || k === '/'){ marca('incerto'); pisca('t-inc'); e.preventDefault(); }
+  else if (e.key === 'ArrowRight'){ v.pause(); v.currentTime = Math.min(dur, v.currentTime + d*passo()); e.preventDefault(); }
+  else if (e.key === 'ArrowLeft'){ v.pause(); v.currentTime = Math.max(0, v.currentTime - d*passo()); e.preventDefault(); }
+  else if (e.key === ' '){ v.paused ? v.play() : v.pause(); e.preventDefault(); }
+  else if (e.key === 'Backspace'){ marcas.pop(); render(); e.preventDefault(); }
+});
+v.addEventListener('timeupdate', desenhaBarra);
+
+/* ---------- barra de eventos ---------- */
+function desenhaBarra(){
+  const c = $('barra'), ctx = c.getContext('2d');
+  c.width = c.clientWidth; c.height = 34;
+  ctx.fillStyle = '#222'; ctx.fillRect(0,0,c.width,c.height);
+  if (!dur) return;
+  for (let i = 0; i < marcas.length; i++){
+    const t0 = marcas[i].t_ms / 1000;
+    const t1 = (i+1 < marcas.length) ? marcas[i+1].t_ms/1000 : dur;
+    ctx.fillStyle = CORES[marcas[i].olhar] || '#555';
+    ctx.fillRect(t0/dur*c.width, 0, Math.max(1,(t1-t0)/dur*c.width), c.height);
+  }
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(v.currentTime/dur*c.width - 1, 0, 2, c.height);
+}
+
+function render(){
+  const tb = $('tab').querySelector('tbody');
+  tb.innerHTML = marcas.map(m =>
+    `<tr><td class="num">${(m.t_ms/1000).toFixed(2)} s</td>
+         <td style="color:${CORES[m.olhar]}">${m.olhar}</td></tr>`).join('');
+  $('contagem').textContent = `${marcas.length} marca(s)`;
+  desenhaBarra();
+}
+
+/* ---------- exportação ----------
+   Expande as marcas (que são eventos de mudança) para uma amostra por quadro,
+   que é o formato que o analisar.py e o iCatcher+/OWLET usam.                */
+$('exportar').addEventListener('click', () => {
+  if (!marcas.length){ alert('Nada codificado ainda.'); return; }
+  const dt = 1000 * passo();
+  const linhas = ['t_ms,olhar'];
+  let i = 0, atual = marcas[0].olhar;
+  for (let t = marcas[0].t_ms; t <= dur*1000; t += dt){
+    while (i+1 < marcas.length && marcas[i+1].t_ms <= t){ i++; atual = marcas[i].olhar; }
+    // 'incerto' vira 'away': o analisador o exclui do denominador da acurácia,
+    // que é o tratamento correto para quadro sem informação
+    linhas.push(`${t.toFixed(1)},${atual === 'incerto' ? 'away' : atual}`);
+  }
+  const b = new Blob([linhas.join('\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(b); a.download = 'anotacoes_manuais.csv'; a.click();
+  setTimeout(()=> URL.revokeObjectURL(a.href), 5000);
+});
+
+$('limpar').addEventListener('click', () => { if (confirm('Apagar todas as marcas?')){ marcas = []; render(); } });
+
+/* ---------- concordância ---------- */
+function leCSV(txt){
+  const linhas = txt.trim().split(/\r?\n/);
+  const cab = linhas[0].split(',').map(s => s.trim().toLowerCase());
+  const it = cab.findIndex(c => ['t_ms','time_ms','timestamp_ms','t'].includes(c));
+  const ig = cab.findIndex(c => ['olhar','gaze','look','annotation','direcao'].includes(c));
+  if (it < 0 || ig < 0) throw new Error('preciso das colunas t_ms e olhar');
+  const out = [];
+  for (let i = 1; i < linhas.length; i++){
+    const p = linhas[i].split(',');
+    if (p.length <= Math.max(it,ig)) continue;
+    let g = (p[ig]||'').trim().toLowerCase();
+    g = ['l','left','esquerda','e'].includes(g) ? 'left'
+      : ['r','right','direita','d'].includes(g) ? 'right' : 'away';
+    const t = parseFloat(p[it]);
+    if (Number.isFinite(t)) out.push([t, g]);
+  }
+  return out.sort((a,b) => a[0]-b[0]);
+}
+
+function maisProximo(arr, t, tol){
+  let lo = 0, hi = arr.length - 1, best = null, bd = Infinity;
+  while (lo <= hi){
+    const m = (lo+hi) >> 1, d = Math.abs(arr[m][0] - t);
+    if (d < bd){ bd = d; best = arr[m]; }
+    if (arr[m][0] < t) lo = m+1; else hi = m-1;
+  }
+  return bd <= tol ? best : null;
+}
+
+$('comparar').addEventListener('click', async () => {
+  const fm = $('cmp_man').files[0], fa = $('cmp_aut').files[0];
+  if (!fm || !fa){ $('res').textContent = 'Selecione os dois arquivos.'; return; }
+  try{
+    const man = leCSV(await fm.text()), aut = leCSV(await fa.text());
+    const tol = 1000*passo()/2;
+    const cls = ['left','right','away'];
+    const mat = [[0,0,0],[0,0,0],[0,0,0]];
+    let n = 0, iguais = 0;
+    for (const [t,g] of man){
+      const p = maisProximo(aut, t, tol);
+      if (!p) continue;
+      n++; if (p[1] === g) iguais++;
+      mat[cls.indexOf(g)][cls.indexOf(p[1])]++;
+    }
+    if (!n){ $('res').textContent = 'Nenhum quadro em comum — as bases de tempo não batem.'; return; }
+    const po = iguais/n;
+    let pe = 0;
+    for (let i = 0; i < 3; i++){
+      const lm = mat[i].reduce((a,b)=>a+b,0);
+      const la = mat.reduce((a,r)=>a+r[i],0);
+      pe += (lm/n)*(la/n);
+    }
+    const kappa = pe < 1 ? (po-pe)/(1-pe) : 1;
+    const veredito = po >= 0.95 ? 'Concordância no padrão da literatura (>95%).'
+      : po >= 0.90 ? 'Aceitável, mas abaixo dos 95% usuais entre codificadores humanos.'
+      : 'BAIXA — não confie no automático. Verifique luz, ângulo, enquadramento e, '
+        + 'antes de tudo, se esquerda e direita não estão invertidas.';
+    $('res').textContent =
+      `Quadros comparados: ${n}\n` +
+      `Concordância: ${(po*100).toFixed(1)}%   kappa de Cohen: ${kappa.toFixed(3)}\n\n` +
+      `matriz (linha = manual, coluna = automático)\n` +
+      `            esq    dir   fora\n` +
+      cls.map((c,i)=> `${c.padEnd(8)} ` + mat[i].map(x=>String(x).padStart(6)).join('')).join('\n') +
+      `\n\n${veredito}`;
+  }catch(e){ $('res').textContent = 'Erro: ' + e.message; }
+});
+
+window.addEventListener('resize', desenhaBarra);
+render();
+</script>
+</body>
+</html>

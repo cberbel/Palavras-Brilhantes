@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111">
+<title>Câmera — LWL</title>
+<style>
+  :root{--bg:#111;--panel:#1c1c1e;--ink:#f2f2f2;--muted:#9aa;--accent:#4da3ff;
+        --rec:#e33;--ok:#4caf50;--warn:#ffb340}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  #wrap{max-width:560px;margin:0 auto;padding:16px calc(16px + env(safe-area-inset-left))
+        calc(24px + env(safe-area-inset-bottom))}
+  h1{font-size:19px;margin:0 0 2px}
+  p.sub{color:var(--muted);font-size:13px;margin:0 0 14px;line-height:1.45}
+  video{width:100%;aspect-ratio:3/4;object-fit:cover;background:#000;border-radius:14px;
+    transform:scaleX(-1);display:block}
+  #estado{display:flex;align-items:center;gap:8px;margin:10px 0;font-size:14px;min-height:22px}
+  #ponto{width:12px;height:12px;border-radius:50%;background:#444;flex:0 0 auto}
+  #ponto.on{background:var(--rec);box-shadow:0 0 10px var(--rec);animation:p 1s infinite}
+  @keyframes p{50%{opacity:.35}}
+  #tempo{font-variant-numeric:tabular-nums;font-size:15px;color:var(--muted);margin-left:auto}
+  button{width:100%;cursor:pointer;border:none;border-radius:14px;padding:18px;
+    font-size:18px;font-weight:700;background:var(--accent);color:#04203f;margin-top:10px}
+  button.rec{background:var(--rec);color:#fff}
+  button.ghost{background:#2a2a2e;color:var(--ink);font-size:16px;padding:14px}
+  button:disabled{opacity:.4}
+  .aviso{border-radius:12px;padding:11px 13px;font-size:13px;margin-top:12px;line-height:1.45}
+  .aviso.mau{background:#3a1414;border:1px solid var(--rec);color:#ffd0d0}
+  .aviso.atencao{background:#3a2a10;border:1px solid var(--warn);color:#ffdca8}
+  .aviso.bom{background:#122a14;border:1px solid var(--ok);color:#cdebd0}
+  details{margin-top:16px;background:var(--panel);border-radius:12px;padding:10px 13px}
+  summary{cursor:pointer;font-weight:600;font-size:14px}
+  details p,details li{color:var(--muted);font-size:13px;line-height:1.5}
+  #info{font-size:12px;color:var(--muted);margin-top:8px;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <h1>Câmera do teste</h1>
+  <p class="sub">Esta página só <b>grava o rosto</b>. As figuras e o som ficam no
+    computador ou tablet. O vídeo não sai deste aparelho — é você que decide o que fazer
+    com ele depois.</p>
+
+  <video id="v" autoplay muted playsinline></video>
+
+  <div id="estado"><span id="ponto"></span><span id="txt">preparando…</span><span id="tempo"></span></div>
+  <div id="info"></div>
+
+  <button id="btn" disabled>Gravar</button>
+  <button id="baixar" class="ghost" style="display:none">Baixar o vídeo</button>
+  <div id="avisos"></div>
+
+  <details>
+    <summary>Como posicionar</summary>
+    <ul>
+      <li>Celular <b>em pé</b>, apoiado logo abaixo da tela que mostra as figuras,
+        na altura dos olhos da criança.</li>
+      <li>Enquadre <b>cabeça e ombros</b>. Não dê zoom só nos olhos: o codificador
+        precisa do rosto inteiro para estimar a posição da cabeça.</li>
+      <li>Luz na frente da criança. Janela atrás arruína a gravação.</li>
+      <li>Modo avião, para nenhuma notificação interromper.</li>
+      <li>Comece a gravar <b>antes</b> de iniciar a sessão no computador e pare
+        <b>depois</b> que ela terminar.</li>
+      <li>Volume do computador alto: é o microfone daqui que capta o bipe de
+        sincronização, e sem ele não há como alinhar o vídeo aos estímulos.</li>
+    </ul>
+  </details>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+let stream = null, rec = null, blobs = [], arquivo = null, t0 = 0, timer = null, wake = null;
+
+function aviso(classe, texto){
+  const d = document.createElement('div');
+  d.className = 'aviso ' + classe;
+  d.innerHTML = texto;
+  $('avisos').appendChild(d);
+}
+
+// Grava COM áudio e com os processamentos desligados. O cancelamento de eco e a
+// supressão de ruído existem para remover justamente o tipo de som que o bipe é:
+// um tom vindo de um alto-falante próximo. Ligados, eles apagam a referência de
+// sincronização e o vídeo fica inutilizável para medir tempo de reação.
+const restricoes = {
+  audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false },
+  video: { facingMode:'user', width:{ideal:1280}, height:{ideal:720}, frameRate:{ideal:60} }
+};
+
+function escolheMime(){
+  // O Safari do iPhone grava mp4; o Chrome do Android, webm. Aceita o que houver.
+  const opcoes = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus',
+                  'video/webm','video/mp4;codecs=h264,aac','video/mp4'];
+  for (const m of opcoes) if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) return m;
+  return '';
+}
+
+async function iniciar(){
+  if (!navigator.mediaDevices || !window.MediaRecorder){
+    aviso('mau', '<b>Este navegador não grava vídeo.</b> Use o Chrome no Android ou o ' +
+                 'Safari no iPhone, e confira se o sistema está atualizado.');
+    $('txt').textContent = 'não suportado';
+    return;
+  }
+  if (!window.isSecureContext){
+    aviso('mau', '<b>Página sem HTTPS.</b> O navegador só libera a câmera em conexão ' +
+                 'segura. Abra pelo endereço https.');
+  }
+  try{
+    stream = await navigator.mediaDevices.getUserMedia(restricoes);
+  }catch(e){
+    aviso('mau', '<b>Não consegui abrir a câmera:</b> ' + e.message);
+    $('txt').textContent = 'sem câmera';
+    return;
+  }
+  $('v').srcObject = stream;
+  $('btn').disabled = false;
+  $('txt').textContent = 'pronto para gravar';
+
+  const vt = stream.getVideoTracks()[0], at = stream.getAudioTracks()[0];
+  const s = vt ? vt.getSettings() : {};
+  $('info').textContent = `${s.width||'?'}×${s.height||'?'} · ${s.frameRate?Math.round(s.frameRate):'?'} fps`;
+
+  if (!at) aviso('mau', '<b>Sem microfone.</b> O bipe de sincronização não será gravado ' +
+                        'e não haverá como alinhar o vídeo aos estímulos.');
+  if (s.frameRate && s.frameRate < 25)
+    aviso('atencao', `Taxa de quadros baixa (${Math.round(s.frameRate)} fps). ` +
+                     'A resolução temporal fica pior que os 33 ms do padrão.');
+}
+
+function relogio(){
+  const s = Math.floor((Date.now() - t0)/1000);
+  $('tempo').textContent = String(Math.floor(s/60)).padStart(2,'0') + ':' +
+                           String(s%60).padStart(2,'0');
+}
+
+async function grava(){
+  blobs = [];
+  const mime = escolheMime();
+  rec = new MediaRecorder(stream, mime ? {mimeType:mime} : undefined);
+  rec.ondataavailable = e => { if (e.data.size) blobs.push(e.data); };
+  rec.onstop = () => {
+    arquivo = new Blob(blobs, {type: rec.mimeType || 'video/webm'});
+    $('baixar').style.display = 'block';
+    const mb = (arquivo.size/1048576).toFixed(1);
+    $('txt').textContent = `gravação pronta (${mb} MB)`;
+    aviso('bom', 'Baixe o vídeo e leve-o para o computador junto com o ' +
+                 '<code>_eventos.csv</code> que o apresentador gerou. Os dois vão na ' +
+                 'mesma pasta.');
+  };
+  rec.start(1000);
+  t0 = Date.now(); relogio(); timer = setInterval(relogio, 500);
+  $('ponto').classList.add('on');
+  $('txt').textContent = 'gravando';
+  $('btn').textContent = 'Parar'; $('btn').classList.add('rec');
+  $('avisos').innerHTML = '';
+  // impede a tela de apagar no meio da sessão, o que interrompe a gravação
+  try{ if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); }catch(e){}
+}
+
+function para(){
+  if (rec && rec.state !== 'inactive') rec.stop();
+  clearInterval(timer);
+  $('ponto').classList.remove('on');
+  $('btn').textContent = 'Gravar de novo'; $('btn').classList.remove('rec');
+  if (wake){ try{ wake.release(); }catch(e){} wake = null; }
+}
+
+$('btn').addEventListener('click', () => {
+  if (rec && rec.state === 'recording') para(); else grava();
+});
+
+$('baixar').addEventListener('click', () => {
+  if (!arquivo) return;
+  const ext = (arquivo.type.includes('mp4')) ? 'mp4' : 'webm';
+  const d = new Date(), p = n => String(n).padStart(2,'0');
+  const nome = `LWL_camera_${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_` +
+               `${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}.${ext}`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(arquivo); a.download = nome; a.click();
+  setTimeout(()=> URL.revokeObjectURL(a.href), 8000);
+});
+
+// se a tela for bloqueada ou o app for para segundo plano durante a gravação
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && rec && rec.state === 'recording')
+    aviso('atencao', 'A tela saiu de foco durante a gravação. Alguns aparelhos ' +
+                     'interrompem a captura nesse caso — confira o vídeo no final.');
+});
+
+iniciar();
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+# dados de sessão: vídeo de rosto de criança nunca vai para repositório
+dados/
+*.webm
+*.mp4
+resultados/
+sincronizacao.json
+
+# material de trabalho
+apresentador/estimulos/candidatas/
+cowork/
+__pycache__/
