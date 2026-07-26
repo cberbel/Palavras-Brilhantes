@@ -1,0 +1,6 @@
+# ferramentas locais: nao precisam ser servidas pelo site
+analisador/
+*.py
+*.ps1
+*.cmd
+PLANO-cowork-original.md
