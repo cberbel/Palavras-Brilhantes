@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Plataforma para o Desenvolvimento da Linguagem na Primeira Infância | Palavras Brilhantes</title>
-<meta name="description" content="Aproximação entre família e escola na educação infantil: mensuração do ambiente linguístico, avaliação da habilidade de processamento linguístico e guia com as melhores práticas.">
+<meta name="description" content="Para pais e cuidadores de bebês de 0 a 36 meses: mensuração do ambiente linguístico, avaliação da habilidade de processamento linguístico e guia com as melhores práticas.">
 <meta name="theme-color" content="#7634BF">
 <link rel="icon" href="assets/brain-180.png">
 <link rel="apple-touch-icon" href="assets/brain-180.png">
 <meta property="og:title" content="Palavras Brilhantes para seus filhos">
-<meta property="og:description" content="O melhor para o desenvolvimento da linguagem na educação infantil.">
+<meta property="og:description" content="O melhor para o desenvolvimento da linguagem na primeira infância. Para pais de bebês de 0 a 36 meses.">
 <meta property="og:image" content="assets/logo.png">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,19 +17,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
 <style>
 /* ==========================================================================
-   Palavras Brilhantes — home
-   Mobile primeiro: o layout base é o do celular, e os breakpoints só
-   acrescentam. Paleta e tipografia vindas do site atual.
-
-   Restrição de marca: o logo tem o cérebro em roxo e o "para seus filhos"
-   em roxo, então ele SÓ é legível sobre fundo claro. Por isso as seções
-   escuras usam a palavra-marca em texto, nunca a imagem do logo.
+   Palavras Brilhantes — home. Mobile primeiro.
+   Público: PAIS e cuidadores de bebês de 0 a 36 meses (não as crianças).
+   Marca: o logo tem cérebro e subtítulo em roxo, então só é legível sobre
+   fundo claro — por isso não existe seção escura com o logo em imagem.
    ========================================================================== */
 :root{
-  --roxo:#7634BF; --roxo-escuro:#5D1BA6; --roxo-tinta:#F6F1FD;
-  --amarelo:#FCF537; --amarelo-fundo:#FFFCD6;
+  --roxo:#7634BF; --roxo-escuro:#5D1BA6; --roxo-tinta:#F6F1FD; --roxo-borda:#E4D8F7;
+  --amarelo:#FCF537; --amarelo-fundo:#FFFBD1;
   --tinta:#1D1E20; --cinza:#5C5F66; --linha:#E8E5EF; --branco:#fff;
-  --raio:16px; --max:1120px;
+  --raio:18px; --max:1120px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth}
@@ -45,100 +42,129 @@ img{max-width:100%;display:block}
 /* ---------- botões ---------- */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
   font-family:Rubik,sans-serif;font-weight:700;font-size:17px;text-decoration:none;
-  padding:16px 26px;border-radius:999px;border:2px solid transparent;
-  min-height:54px;transition:transform .12s ease, box-shadow .12s ease}
+  padding:17px 26px;border-radius:999px;border:2px solid transparent;cursor:pointer;
+  min-height:56px;transition:transform .12s ease,background .15s ease}
 .btn:active{transform:translateY(1px)}
-.btn-primario{background:var(--roxo);color:#fff;box-shadow:0 6px 20px rgba(118,52,191,.28)}
+.btn-primario{background:var(--roxo);color:#fff;box-shadow:0 8px 22px rgba(118,52,191,.3)}
 .btn-primario:hover{background:var(--roxo-escuro)}
-.btn-amarelo{background:var(--amarelo);color:var(--tinta);box-shadow:0 6px 20px rgba(200,193,20,.3)}
-.btn-contorno{border-color:var(--roxo);color:var(--roxo);background:transparent}
 .btn-bloco{display:flex;width:100%}
+.link-quieto{display:inline-block;margin-top:16px;color:var(--roxo);font-weight:700;
+  font-size:16px;text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- formulário de captura ---------- */
+.captura{display:grid;gap:10px;margin-top:22px}
+.captura input{width:100%;padding:17px 20px;font-size:16px;font-family:inherit;
+  border:2px solid var(--roxo-borda);border-radius:999px;background:#fff;min-height:56px}
+.captura input:focus{outline:3px solid rgba(118,52,191,.35);outline-offset:1px;border-color:var(--roxo)}
+.garantia{margin-top:12px;font-size:14px;color:var(--cinza);display:flex;
+  align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}
+.garantia svg{flex:0 0 auto}
+.ok-msg{display:none;margin-top:14px;background:var(--roxo-tinta);border:1px solid var(--roxo-borda);
+  color:var(--roxo-escuro);border-radius:14px;padding:14px 16px;font-size:15px;text-align:left}
 
 /* ---------- cabeçalho ---------- */
-header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);
+header{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.94);
   backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--linha)}
 .barra{display:flex;align-items:center;justify-content:space-between;
   gap:12px;padding:10px 20px;max-width:var(--max);margin:0 auto}
-/* O logo original é um lockup empilhado: cérebro em cima, duas linhas de texto
-   embaixo. Reduzido à altura de uma barra de navegação, o texto vira borrão.
-   Na barra usamos só o símbolo do cérebro, com a marca em texto ao lado — que
-   permanece nítida em qualquer tamanho e pesa quase nada. O lockup completo
-   fica para onde há espaço vertical. */
 .logo{display:flex;align-items:center;gap:9px;text-decoration:none}
 .logo img{height:38px;width:38px}
 .logo span{font-family:Rubik,sans-serif;font-weight:800;font-size:15px;
   line-height:1.02;color:var(--roxo);letter-spacing:-.01em}
-.barra .btn{padding:10px 18px;min-height:0;font-size:15px}
+.barra .btn{padding:11px 18px;min-height:0;font-size:15px}
 nav.links{display:none}
 
 /* ---------- herói ---------- */
-.heroi{background:linear-gradient(180deg,var(--roxo-tinta) 0%,#fff 100%);
-  padding:38px 0 46px;text-align:center}
-.heroi h1{font-size:clamp(34px,9vw,58px);font-weight:800;letter-spacing:-.02em}
+.heroi{background:linear-gradient(180deg,var(--roxo-tinta) 0%,#fff 100%);padding:34px 0 10px}
+.heroi .env{text-align:center}
+.chip{display:inline-block;background:#fff;border:1px solid var(--roxo-borda);
+  color:var(--roxo);font-weight:700;font-size:13.5px;border-radius:999px;padding:7px 15px}
+.heroi h1{font-size:clamp(33px,8.6vw,56px);font-weight:800;letter-spacing:-.02em;margin-top:16px}
 .heroi h1 .roxo{color:var(--roxo);display:block}
-.heroi h1 .filhos{display:block;font-size:.52em;font-weight:500;color:var(--tinta);
-  margin-top:6px;letter-spacing:0}
-.heroi p.sub{margin:18px auto 0;max-width:30ch;color:var(--cinza);font-size:18px}
-.heroi .acoes{margin-top:26px;display:flex;flex-direction:column;gap:12px}
-.heroi .selo{margin-top:20px;font-size:14px;color:var(--cinza)}
-.heroi .selo b{color:var(--roxo)}
+.heroi h1 .filhos{display:block;font-size:.5em;font-weight:500;color:var(--tinta);margin-top:6px}
+.heroi p.sub{margin:16px auto 0;max-width:34ch;color:var(--cinza);font-size:18px}
+.heroi .foto{margin:30px -20px 0;overflow:hidden}
+.heroi .foto img{width:100%;height:260px;object-fit:cover;object-position:center 32%}
 
 /* ---------- pilares ---------- */
-.pilares{padding:48px 0 8px;display:grid;gap:18px}
-.pilar{border:1px solid var(--linha);border-radius:var(--raio);padding:24px 22px;
-  background:#fff;position:relative;overflow:hidden}
-.pilar .n{font-family:Rubik,sans-serif;font-weight:800;font-size:15px;color:var(--roxo);
+.secao{padding:52px 0}
+.secao > h2{font-size:clamp(26px,6.6vw,36px);font-weight:800;text-align:center;
+  max-width:22ch;margin:0 auto 8px}
+.secao > p.intro{text-align:center;color:var(--cinza);max-width:46ch;margin:0 auto 30px}
+.pilares{display:grid;gap:18px}
+.pilar{border:1px solid var(--linha);border-radius:var(--raio);background:#fff;overflow:hidden}
+.pilar img{width:100%;height:172px;object-fit:cover}
+.pilar .corpo{padding:22px}
+.pilar .n{font-family:Rubik,sans-serif;font-weight:800;font-size:14px;color:var(--roxo);
   background:var(--roxo-tinta);border-radius:999px;padding:5px 13px;display:inline-block}
-.pilar h3{font-size:22px;margin:14px 0 8px;font-weight:700}
+.pilar h3{font-size:21px;margin:13px 0 8px;font-weight:700}
 .pilar p{color:var(--cinza);font-size:16px}
 
-/* ---------- lista de recursos ---------- */
-.recursos{margin:52px 0;background:var(--tinta);color:#fff;border-radius:24px;
-  padding:36px 22px}
-.recursos h2{font-size:clamp(25px,6.4vw,34px);font-weight:800}
-.recursos h2 em{font-style:normal;color:var(--amarelo)}
-.recursos ul{list-style:none;margin:24px 0 0;padding:0;display:grid;gap:14px}
-.recursos li{display:flex;gap:12px;align-items:flex-start;font-size:16px;
-  color:#E7E5EC;line-height:1.5}
-.recursos li svg{flex:0 0 auto;margin-top:3px}
+/* ---------- o que a plataforma oferece ---------- */
+.oferece{background:var(--roxo-tinta);border-radius:26px;padding:34px 22px;margin-bottom:8px}
+.oferece h2{font-size:clamp(25px,6.4vw,34px);font-weight:800;text-align:center;
+  max-width:20ch;margin:0 auto}
+.oferece h2 em{font-style:normal;color:var(--roxo)}
+.itens{list-style:none;margin:26px 0 0;padding:0;display:grid;gap:11px}
+.itens li{display:flex;gap:12px;align-items:flex-start;font-size:16px;line-height:1.5;
+  background:#fff;border:1px solid var(--roxo-borda);border-radius:14px;padding:15px 16px}
+.itens li svg{flex:0 0 auto;margin-top:2px}
+.itens li.destaque{background:var(--roxo);border-color:var(--roxo);color:#fff;
+  box-shadow:0 10px 26px rgba(118,52,191,.28);flex-direction:column;gap:8px;padding:20px 18px}
+.itens li.destaque .tag{font-family:Rubik,sans-serif;font-weight:800;font-size:12px;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--tinta);
+  background:var(--amarelo);border-radius:999px;padding:4px 11px;align-self:flex-start}
+.itens li.destaque strong{font-family:Rubik,sans-serif;font-weight:800;font-size:19px;line-height:1.25}
+.itens li.destaque span{color:#EFE6FB;font-size:15.5px}
 
 /* ---------- chamada final ---------- */
-.final{background:var(--amarelo-fundo);border-radius:24px;padding:36px 22px;
-  text-align:center;margin-bottom:52px}
+.final{background:var(--amarelo-fundo);border-radius:26px;overflow:hidden;margin-bottom:52px}
+/* a criança está a ~68% da altura da foto; recortar pelo topo mostrava só as
+   plantas do fundo */
+.final img{width:100%;height:230px;object-fit:cover;object-position:center 68%}
+.final .txt{padding:32px 22px;text-align:center}
 .final h2{font-size:clamp(25px,6.4vw,34px);font-weight:800}
-.final p{margin:14px auto 0;max-width:34ch;color:#54523A}
-.final .btn{margin-top:24px}
-
-/* ---------- cadastro ---------- */
-.cadastro{border-top:1px solid var(--linha);padding:44px 0}
-.cadastro h2{font-size:22px;font-weight:700}
-.cadastro p{color:var(--cinza);font-size:15px;margin-top:8px}
-.cadastro .campo{margin-top:18px;display:grid;gap:12px}
-.cadastro input{width:100%;padding:16px 18px;font-size:16px;font-family:inherit;
-  border:1px solid var(--linha);border-radius:999px;background:#FBFAFD;min-height:54px}
-.cadastro input:focus{outline:2px solid var(--roxo);outline-offset:1px;border-color:transparent}
+.final p{margin:14px auto 0;max-width:36ch;color:#55532F}
 
 /* ---------- rodapé ---------- */
-footer{border-top:1px solid var(--linha);padding:30px 0 40px;color:var(--cinza);font-size:14px}
+footer{border-top:1px solid var(--linha);padding:30px 0 96px;color:var(--cinza);font-size:14px}
 footer .marca{font-weight:700;color:var(--tinta);font-size:16px}
-footer .fina{margin-top:12px;line-height:1.55}
+footer .fina{margin-top:10px;line-height:1.55}
+
+/* ---------- barra fixa de conversão (só celular) ---------- */
+.barra-fixa{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:10px 16px
+  calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);
+  backdrop-filter:blur(12px);border-top:1px solid var(--linha);
+  transform:translateY(110%);transition:transform .22s ease}
+.barra-fixa.ver{transform:none}
+.barra-fixa .btn{width:100%;min-height:52px;font-size:16.5px}
 
 /* ---------- telas maiores ---------- */
-@media (min-width:700px){
+@media (min-width:760px){
   body{font-size:18px}
   .logo img{height:46px;width:46px}
   .logo span{font-size:18px}
   nav.links{display:flex;gap:26px;font-weight:500;font-size:16px}
   nav.links a{text-decoration:none;color:var(--cinza)}
   nav.links a:hover{color:var(--roxo)}
-  .heroi{padding:64px 0 72px}
-  .heroi .acoes{flex-direction:row;justify-content:center}
-  .heroi p.sub{max-width:44ch;font-size:20px}
-  .pilares{grid-template-columns:repeat(3,1fr);gap:20px;padding-top:60px}
-  .recursos{padding:52px 46px}
-  .recursos ul{grid-template-columns:1fr 1fr;gap:16px 34px}
-  .final{padding:56px 40px}
-  .cadastro .campo{grid-template-columns:1fr auto;align-items:center}
+  .heroi{padding:56px 0 0}
+  .heroi h1{margin-top:18px}
+  .heroi p.sub{font-size:20px}
+  .captura{grid-template-columns:1fr auto;max-width:520px;margin-left:auto;margin-right:auto}
+  .captura .btn{width:auto}
+  .heroi .foto{margin:40px 0 0;border-radius:26px}
+  .heroi .foto img{height:380px}
+  .pilares{grid-template-columns:repeat(3,1fr);gap:20px}
+  .oferece{padding:48px 44px}
+  .itens{grid-template-columns:1fr 1fr;gap:14px}
+  .itens li.destaque{grid-column:1 / -1;flex-direction:row;align-items:center;gap:18px;padding:22px 24px}
+  .itens li.destaque .tag{align-self:center}
+  .final{display:grid;grid-template-columns:1fr 1fr;align-items:center}
+  .final img{height:100%;min-height:300px}
+  .final .txt{padding:48px 40px;text-align:left}
+  .final p{margin-left:0}
+  footer{padding-bottom:40px}
+  .barra-fixa{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto}}
 </style>
@@ -163,73 +189,102 @@ footer .fina{margin-top:12px;line-height:1.55}
 
   <section class="heroi">
     <div class="env">
+      <span class="chip">Para pais e cuidadores · bebês de 0 a 36 meses</span>
       <h1><span class="roxo">Palavras Brilhantes</span><span class="filhos">para seus filhos</span></h1>
-      <p class="sub">O melhor para o desenvolvimento da linguagem na educação infantil.</p>
-      <div class="acoes">
-        <a class="btn btn-primario btn-bloco" href="#cadastro">Inscreva-se gratuitamente</a>
-        <a class="btn btn-contorno btn-bloco" href="#como">Ver como funciona</a>
+      <p class="sub">O melhor para o desenvolvimento da linguagem na primeira infância —
+         com o que fazer, dia a dia, na sua casa.</p>
+
+      <form class="captura" id="form" novalidate>
+        <input type="email" id="email" placeholder="Seu melhor e-mail" autocomplete="email"
+               inputmode="email" required aria-label="Seu e-mail">
+        <button class="btn btn-primario" type="submit">Quero começar grátis</button>
+      </form>
+      <p class="garantia">
+        <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5l5 2v4c0 3-2.1 5.6-5 7-2.9-1.4-5-4-5-7v-4l5-2z" fill="none" stroke="#5C5F66" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        Grátis para começar · sem cartão · seu e-mail não é compartilhado
+      </p>
+      <div class="ok-msg" id="ok"></div>
+      <a class="link-quieto" href="#como">Ver como funciona</a>
+
+      <div class="foto">
+        <img src="assets/fotos/colo-livro.jpg" width="1000" height="668" fetchpriority="high"
+             alt="Adulto com um bebê no colo, lendo um livro juntos">
       </div>
-      <p class="selo">Para bebês e crianças de <b>12 a 36 meses</b></p>
     </div>
   </section>
 
-  <div class="env" id="como">
-    <section class="pilares">
-      <article class="pilar">
-        <span class="n">#1</span>
-        <h3>Família e escola trabalhando juntos</h3>
-        <p>Mensuração do ambiente linguístico experienciado pelas crianças em casa e na escola.</p>
-      </article>
-      <article class="pilar">
-        <span class="n">#2</span>
-        <h3>Avaliação da habilidade de processamento linguístico</h3>
-        <p>Testes rápidos de última geração para bebês entre 12 e 36 meses.</p>
-      </article>
-      <article class="pilar">
-        <span class="n">#3</span>
-        <h3>Guia com as melhores práticas</h3>
-        <p>Tudo para o desenvolvimento da linguagem infantil. E você ainda pode tirar suas
-           dúvidas com nossa inteligência artificial dedicada.</p>
-      </article>
+  <div class="env">
+
+    <section class="secao" id="como">
+      <h2>Três frentes, uma criança</h2>
+      <p class="intro">O que a plataforma faz por você e pela escola do seu filho.</p>
+      <div class="pilares">
+        <article class="pilar">
+          <img src="assets/fotos/roda-sala.jpg" width="1000" height="665" loading="lazy"
+               alt="Crianças e adultos sentados em roda numa sala">
+          <div class="corpo">
+            <span class="n">#1</span>
+            <h3>Família e escola trabalhando juntos</h3>
+            <p>Mensuração do ambiente linguístico experienciado pelas crianças em casa e na escola.</p>
+          </div>
+        </article>
+        <article class="pilar">
+          <img src="assets/fotos/menino-livro.jpg" width="1000" height="667" loading="lazy"
+               alt="Menino sentado a uma mesa, lendo um livro">
+          <div class="corpo">
+            <span class="n">#2</span>
+            <h3>Avaliação da habilidade de processamento linguístico</h3>
+            <p>Testes rápidos de última geração, de 5 a 10 minutos, feitos em casa.</p>
+          </div>
+        </article>
+        <article class="pilar">
+          <img src="assets/fotos/menina-jaqueta.jpg" width="1000" height="714" loading="lazy"
+               alt="Menina de jaqueta de bolinhas sorrindo">
+          <div class="corpo">
+            <span class="n">#3</span>
+            <h3>Guia com as melhores práticas</h3>
+            <p>Tudo para o desenvolvimento da linguagem infantil. E você ainda pode tirar suas
+               dúvidas com nossa inteligência artificial dedicada.</p>
+          </div>
+        </article>
+      </div>
     </section>
 
-    <section class="recursos" id="plataforma">
+    <section class="oferece" id="plataforma">
       <h2>A plataforma Palavras Brilhantes <em>oferece</em></h2>
-      <ul>
-        <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#FCF537" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <ul class="itens">
+        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#7634BF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Guia com melhores práticas para o desenvolvimento da linguagem infantil</li>
-        <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#FCF537" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#7634BF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Vídeos explicativos</li>
-        <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#FCF537" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#7634BF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Inteligência artificial treinada para responder suas dúvidas</li>
-        <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#FCF537" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#7634BF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Questionário reflexivo para avaliação do ambiente linguístico dos seus filhos</li>
-        <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#FCF537" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#7634BF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Recomendações dos melhores livros para cada faixa etária</li>
-        <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#FCF537" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#7634BF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Acesso a biblioteca com mais de 200 opções de literatura infantil</li>
-        <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#FCF537" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#7634BF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Testes de 5 a 10 minutos para avaliação da habilidade de processamento linguístico</li>
-        <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#FCF537" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Ferramenta para mensuração do ambiente linguístico da criança</li>
+        <li class="destaque">
+          <span class="tag">O diferencial</span>
+          <strong>Ferramenta para mensuração do ambiente linguístico da criança</strong>
+          <span>Quanta linguagem chega de fato ao seu filho, em casa e na escola — medido,
+                não estimado. É a base de tudo o que a plataforma recomenda.</span>
+        </li>
       </ul>
     </section>
 
     <section class="final">
-      <h2>A consciência tranquila de quem fez o melhor</h2>
-      <p>Os primeiros anos são a janela em que a linguagem se constrói mais depressa.
-         Dá para acompanhar isso de perto — e começar hoje.</p>
-      <a class="btn btn-primario" href="#cadastro">Começar agora</a>
-    </section>
-
-    <section class="cadastro" id="cadastro">
-      <h2>Cadastre-se para receber novidades</h2>
-      <p>Você recebe o acesso à plataforma pelo e-mail. Sem custo para começar.</p>
-      <form class="campo" id="form">
-        <input type="email" id="email" placeholder="Seu e-mail" autocomplete="email"
-               inputmode="email" required aria-label="Seu e-mail">
-        <button class="btn btn-amarelo" type="submit">Enviar</button>
-      </form>
+      <img src="assets/fotos/bebe-parede.jpg" width="760" height="950" loading="lazy"
+           alt="Bebê em pé junto a uma parede clara">
+      <div class="txt">
+        <h2>A consciência tranquila de quem fez o melhor</h2>
+        <p>Os primeiros anos são a janela em que a linguagem se constrói mais depressa.
+           Dá para acompanhar isso de perto — e começar hoje.</p>
+        <a class="btn btn-primario btn-bloco" href="#cadastro" style="margin-top:22px">Quero começar grátis</a>
+      </div>
     </section>
   </div>
 </main>
@@ -237,21 +292,54 @@ footer .fina{margin-top:12px;line-height:1.55}
 <footer>
   <div class="env">
     <div class="marca">Palavras Brilhantes</div>
-    <p class="fina">O melhor para o desenvolvimento da linguagem infantil.</p>
+    <p class="fina">O melhor para o desenvolvimento da linguagem infantil.<br>
+      Para pais e cuidadores de bebês de 0 a 36 meses.</p>
   </div>
 </footer>
 
+<div class="barra-fixa" id="fixa">
+  <a class="btn btn-primario" href="#cadastro">Quero começar grátis</a>
+</div>
+
 <script>
-// O site é estático: sem servidor, não há onde guardar o cadastro. Por
-// enquanto o envio abre o e-mail do próprio usuário com o endereço preenchido.
-// Quando existir backend, é só trocar este trecho por um fetch.
-document.getElementById('form').addEventListener('submit', function(e){
+"use strict";
+var form = document.getElementById('form');
+var campo = document.getElementById('email');
+var ok = document.getElementById('ok');
+
+// Site estático: sem servidor, não há onde guardar o cadastro. O envio abre o
+// e-mail do usuário com tudo preenchido. Quando existir backend, troca-se este
+// trecho por um fetch — o resto da tela já está pronto para isso.
+form.addEventListener('submit', function(e){
   e.preventDefault();
-  var v = document.getElementById('email').value.trim();
-  if (!v) return;
+  var v = campo.value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) {
+    campo.focus();
+    campo.style.borderColor = '#D64545';
+    return;
+  }
+  campo.style.borderColor = '';
+  ok.textContent = 'Quase lá — abrimos seu aplicativo de e-mail com a mensagem pronta. É só enviar.';
+  ok.style.display = 'block';
   location.href = 'mailto:cberbel@yahoo.com'
     + '?subject=' + encodeURIComponent('Quero acesso ao Palavras Brilhantes')
     + '&body=' + encodeURIComponent('Meu e-mail para acesso: ' + v);
+});
+
+// A barra fixa só aparece depois que o formulário do topo sai da tela: antes
+// disso ela competiria com o próprio campo e atrapalharia em vez de ajudar.
+var fixa = document.getElementById('fixa');
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver(function(ents){
+    fixa.classList.toggle('ver', !ents[0].isIntersecting);
+  }, {threshold:0}).observe(form);
+}
+document.querySelectorAll('a[href="#cadastro"]').forEach(function(a){
+  a.addEventListener('click', function(e){
+    e.preventDefault();
+    window.scrollTo({top:0, behavior:'smooth'});
+    setTimeout(function(){ campo.focus({preventScroll:true}); }, 420);
+  });
 });
 </script>
 </body>
