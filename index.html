@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Plataforma para o Desenvolvimento da Linguagem na Primeira Infância | Palavras Brilhantes</title>
 <meta name="description" content="Para pais e cuidadores de bebês de 0 a 36 meses: mensuração do ambiente linguístico, avaliação da habilidade de processamento linguístico e guia com as melhores práticas.">
-<meta name="theme-color" content="#7634BF">
-<link rel="icon" href="assets/brain-180.png">
-<link rel="apple-touch-icon" href="assets/brain-180.png">
+<meta name="theme-color" content="#A010E8">
+<link rel="icon" href="assets/estrela-180.png">
+<link rel="apple-touch-icon" href="assets/estrela-180.png">
 <meta property="og:title" content="Palavras Brilhantes para seus filhos">
 <meta property="og:description" content="O melhor para o desenvolvimento da linguagem na primeira infância. Para pais de bebês de 0 a 36 meses.">
 <meta property="og:image" content="assets/logo.png">
@@ -19,13 +19,18 @@
 /* ==========================================================================
    Palavras Brilhantes — home. Mobile primeiro.
    Público: PAIS e cuidadores de bebês de 0 a 36 meses (não as crianças).
-   Marca: o logo tem cérebro e subtítulo em roxo, então só é legível sobre
-   fundo claro — por isso não existe seção escura com o logo em imagem.
+   Marca: a palavra-marca é roxa e o "para seus filhos" é quase-preto, então o
+   lockup só é legível sobre fundo claro — nenhuma seção escura usa a imagem
+   do logo. Em espaços pequenos entra só a estrela, com a marca em texto.
    ========================================================================== */
+/* Cores extraídas do próprio arquivo do logo, não estimadas:
+   #A010E8 na palavra-marca, #1C1B19 no "para seus filhos",
+   #E8D500 na estrela grande e #7B2FF2 na pequena. */
 :root{
-  --roxo:#7634BF; --roxo-escuro:#5D1BA6; --roxo-tinta:#F6F1FD; --roxo-borda:#E4D8F7;
-  --amarelo:#FCF537; --amarelo-fundo:#FFFBD1;
-  --tinta:#1D1E20; --cinza:#5C5F66; --linha:#E8E5EF; --branco:#fff;
+  --roxo:#A010E8; --roxo-escuro:#7B0EB4; --roxo-tinta:#F8F0FE; --roxo-borda:#EBD9FB;
+  --roxo-claro:#7B2FF2;
+  --amarelo:#E8D500; --amarelo-fundo:#FDFAD6;
+  --tinta:#1C1B19; --cinza:#5C5F66; --linha:#EAE6F0; --branco:#fff;
   --raio:18px; --max:1120px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -45,7 +50,7 @@ img{max-width:100%;display:block}
   padding:17px 26px;border-radius:999px;border:2px solid transparent;cursor:pointer;
   min-height:56px;transition:transform .12s ease,background .15s ease}
 .btn:active{transform:translateY(1px)}
-.btn-primario{background:var(--roxo);color:#fff;box-shadow:0 8px 22px rgba(118,52,191,.3)}
+.btn-primario{background:var(--roxo);color:#fff;box-shadow:0 8px 22px rgba(160,16,232,.28)}
 .btn-primario:hover{background:var(--roxo-escuro)}
 .btn-bloco{display:flex;width:100%}
 .link-quieto{display:inline-block;margin-top:16px;color:var(--roxo);font-weight:700;
@@ -55,7 +60,7 @@ img{max-width:100%;display:block}
 .captura{display:grid;gap:10px;margin-top:22px}
 .captura input{width:100%;padding:17px 20px;font-size:16px;font-family:inherit;
   border:2px solid var(--roxo-borda);border-radius:999px;background:#fff;min-height:56px}
-.captura input:focus{outline:3px solid rgba(118,52,191,.35);outline-offset:1px;border-color:var(--roxo)}
+.captura input:focus{outline:3px solid rgba(160,16,232,.32);outline-offset:1px;border-color:var(--roxo)}
 .garantia{margin-top:12px;font-size:14px;color:var(--cinza);display:flex;
   align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}
 .garantia svg{flex:0 0 auto}
@@ -79,9 +84,8 @@ nav.links{display:none}
 .heroi .env{text-align:center}
 .chip{display:inline-block;background:#fff;border:1px solid var(--roxo-borda);
   color:var(--roxo);font-weight:700;font-size:13.5px;border-radius:999px;padding:7px 15px}
-.heroi h1{font-size:clamp(33px,8.6vw,56px);font-weight:800;letter-spacing:-.02em;margin-top:16px}
-.heroi h1 .roxo{color:var(--roxo);display:block}
-.heroi h1 .filhos{display:block;font-size:.5em;font-weight:500;color:var(--tinta);margin-top:6px}
+.heroi h1{margin:18px 0 0}
+.marca-heroi{width:min(100%,420px);height:auto;margin:0 auto}
 .heroi p.sub{margin:16px auto 0;max-width:34ch;color:var(--cinza);font-size:18px}
 .heroi .foto{margin:30px -20px 0;overflow:hidden}
 .heroi .foto img{width:100%;height:260px;object-fit:cover;object-position:center 32%}
@@ -110,7 +114,7 @@ nav.links{display:none}
   background:#fff;border:1px solid var(--roxo-borda);border-radius:14px;padding:15px 16px}
 .itens li svg{flex:0 0 auto;margin-top:2px}
 .itens li.destaque{background:var(--roxo);border-color:var(--roxo);color:#fff;
-  box-shadow:0 10px 26px rgba(118,52,191,.28);flex-direction:column;gap:8px;padding:20px 18px}
+  box-shadow:0 10px 26px rgba(160,16,232,.26);flex-direction:column;gap:8px;padding:20px 18px}
 .itens li.destaque .tag{font-family:Rubik,sans-serif;font-weight:800;font-size:12px;
   letter-spacing:.06em;text-transform:uppercase;color:var(--tinta);
   background:var(--amarelo);border-radius:999px;padding:4px 11px;align-self:flex-start}
@@ -148,7 +152,7 @@ footer .fina{margin-top:10px;line-height:1.55}
   nav.links a{text-decoration:none;color:var(--cinza)}
   nav.links a:hover{color:var(--roxo)}
   .heroi{padding:56px 0 0}
-  .heroi h1{margin-top:18px}
+  .marca-heroi{width:min(100%,560px)}
   .heroi p.sub{font-size:20px}
   .captura{grid-template-columns:1fr auto;max-width:520px;margin-left:auto;margin-right:auto}
   .captura .btn{width:auto}
@@ -174,7 +178,7 @@ footer .fina{margin-top:10px;line-height:1.55}
 <header>
   <div class="barra">
     <a class="logo" href="/" aria-label="Palavras Brilhantes — início">
-      <img src="assets/brain-180.png" alt="" width="180" height="180">
+      <img src="assets/estrela-180.png" alt="" width="180" height="180">
       <span>Palavras<br>Brilhantes</span>
     </a>
     <nav class="links">
@@ -190,7 +194,12 @@ footer .fina{margin-top:10px;line-height:1.55}
   <section class="heroi">
     <div class="env">
       <span class="chip">Para pais e cuidadores · bebês de 0 a 36 meses</span>
-      <h1><span class="roxo">Palavras Brilhantes</span><span class="filhos">para seus filhos</span></h1>
+      <!-- O h1 carrega a própria marca: o lockup já é a frase "Palavras
+           Brilhantes para seus filhos", e em tamanho de herói ele fica
+           perfeitamente legível. O alt preserva o texto para leitores de tela
+           e para busca. -->
+      <h1><img class="marca-heroi" src="assets/logo.png" width="1000" height="639"
+               fetchpriority="high" alt="Palavras Brilhantes para seus filhos"></h1>
       <p class="sub">O melhor para o desenvolvimento da linguagem na primeira infância —
          com o que fazer, dia a dia, na sua casa.</p>
 
@@ -253,19 +262,19 @@ footer .fina{margin-top:10px;line-height:1.55}
     <section class="oferece" id="plataforma">
       <h2>A plataforma Palavras Brilhantes <em>oferece</em></h2>
       <ul class="itens">
-        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#7634BF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#A010E8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Guia com melhores práticas para o desenvolvimento da linguagem infantil</li>
-        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#7634BF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#A010E8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Vídeos explicativos</li>
-        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#7634BF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#A010E8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Inteligência artificial treinada para responder suas dúvidas</li>
-        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#7634BF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#A010E8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Questionário reflexivo para avaliação do ambiente linguístico dos seus filhos</li>
-        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#7634BF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#A010E8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Recomendações dos melhores livros para cada faixa etária</li>
-        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#7634BF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#A010E8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Acesso a biblioteca com mais de 200 opções de literatura infantil</li>
-        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#7634BF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <li><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="#A010E8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Testes de 5 a 10 minutos para avaliação da habilidade de processamento linguístico</li>
         <li class="destaque">
           <span class="tag">O diferencial</span>
