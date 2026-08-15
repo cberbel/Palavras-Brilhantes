@@ -453,16 +453,29 @@ function embaralhaComRestricao(arr){
 }
 
 /* ---------------------------- estímulos ---------------------------- */
-async function ensureAC(){
+/* Sem gesto do usuário o navegador mantém o AudioContext suspenso e o
+   `resume()` só resolve depois de um clique — se a checagem de estímulos
+   esperasse por ele, ficaria pendurada para sempre. decodeAudioData funciona
+   com o contexto suspenso; então aqui NÃO se espera o resume. Quem precisa do
+   contexto rodando (testar som, iniciar) chama ensureACAtivo, sempre a partir
+   de um clique. */
+function ensureAC(){
   if(!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
-  if(ac.state === 'suspended') await ac.resume();
+  if(ac.state === 'suspended') ac.resume().catch(()=>{});
+  return ac;
+}
+async function ensureACAtivo(){
+  ensureAC();
+  if(ac.state === 'suspended'){
+    await Promise.race([ac.resume(), dormir(1500)]);
+  }
   return ac;
 }
 async function loadAudio(path){
   if(buffers.has(path)) return buffers.get(path);
   const r = await fetch(path);
   if(!r.ok) throw new Error('áudio não encontrado: ' + path);
-  const buf = await (await ensureAC()).decodeAudioData(await r.arrayBuffer());
+  const buf = await ensureAC().decodeAudioData(await r.arrayBuffer());
   buffers.set(path, buf); return buf;
 }
 function preImg(src){ return new Promise(res => { const im = new Image(); im.onload=()=>res(true); im.onerror=()=>res(false); im.src = src; }); }
@@ -564,7 +577,8 @@ async function esperaAte(tAC){ const ms = (tAC - ac.currentTime)*1000; if(ms > 0
 $('btnSom').addEventListener('click', async () => {
   $('btnSom').disabled = true; $('btnSom').textContent = 'Tocando…';
   try{
-    await ensureAC();
+    await ensureACAtivo();
+    if(ac.state !== 'running') throw new Error('o navegador não liberou o áudio — clique de novo');
     const ts = lerTrialsSemEmbaralhar();
     const t0 = ac.currentTime + 0.1;
     agendaBipe(t0);
@@ -621,7 +635,7 @@ document.addEventListener('keydown', e => {
 async function rodar(){
   const trials = lerTrials();
   if(!trials.length){ $('erroPrep').textContent = 'Nenhum trial válido na lista.'; return; }
-  await ensureAC();
+  await ensureACAtivo();
   try{ for(const t of trials){ if(!t.audio || isNaN(t.onset)) throw new Error(`trial "${t.alvo}" sem áudio/onset`); await loadAudio(BASE + t.audio); } }
   catch(e){ $('erroPrep').textContent = 'Não dá para iniciar: ' + e.message; return; }
 
