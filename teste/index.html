@@ -3,107 +3,723 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#111">
-<title>Teste de processamento linguístico — LWL</title>
+<title>Teste de processamento linguístico | Palavras Brilhantes</title>
+<meta name="description" content="Teste de 5 minutos que mede a velocidade com que seu filho reconhece palavras faladas. Baseado no paradigma looking-while-listening de Anne Fernald (Stanford).">
+<meta name="theme-color" content="#A010E8">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#111;--panel:#1c1c1e;--ink:#f2f2f2;--muted:#9aa;--accent:#4da3ff;--warn:#ffb340}
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5}
-  #wrap{max-width:720px;margin:0 auto;
-    padding:22px calc(18px + env(safe-area-inset-left)) calc(30px + env(safe-area-inset-bottom))}
-  h1{font-size:22px;margin:0 0 4px}
-  p.sub{color:var(--muted);font-size:14px;margin:0 0 20px}
-  a.cartao{display:block;text-decoration:none;color:inherit;background:var(--panel);
-    border:1px solid #2e2e32;border-radius:14px;padding:15px 17px;margin-bottom:12px}
-  a.cartao:hover{border-color:var(--accent)}
-  a.cartao h2{margin:0 0 3px;font-size:17px;color:var(--accent)}
-  a.cartao .quem{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;
-    text-transform:uppercase;color:#04203f;background:var(--accent);
-    border-radius:6px;padding:2px 7px;margin-bottom:7px}
-  a.cartao p{margin:0;font-size:13.5px;color:var(--muted)}
-  .aviso{background:#3a2a10;border:1px solid var(--warn);color:#ffdca8;
-    border-radius:12px;padding:12px 14px;font-size:13.5px;margin:20px 0}
-  .aviso b{color:var(--warn)}
-  .aviso table{border-collapse:collapse;margin:9px 0;font-size:13px;width:100%;max-width:330px}
-  .aviso td{padding:3px 10px 3px 0;font-variant-numeric:tabular-nums}
-  .aviso td:last-child{text-align:right;font-weight:700}
-  .aviso .bom{color:#8fd694} .aviso .ruim{color:#ff9a9a}
-  details{background:var(--panel);border-radius:12px;padding:11px 14px;margin-top:14px}
-  summary{cursor:pointer;font-weight:600;font-size:14.5px}
-  details p,details li{font-size:13.5px;color:var(--muted)}
-  code{background:#2a2a2e;border-radius:5px;padding:1px 5px;font-size:12.5px}
-  footer{color:#666;font-size:12.5px;margin-top:26px;border-top:1px solid #2a2a2e;padding-top:14px}
+/* ==========================================================================
+   Palavras Brilhantes — /teste
+   Looking-While-Listening (Fernald, Zangl, Portillo & Marchman, 2008).
+
+   Duas plateias no mesmo arquivo:
+   - o PAI, que precisa de um fluxo curto, honesto e sem jargão;
+   - a MEDIDA, que precisa de timing exato e de um log que o analisar.py leia.
+   Onde as duas brigam, a medida ganha e a tela explica o porquê em português.
+
+   Cores e tipografia vêm da home (mesmo roxo #A010E8, Rubik + DM Sans).
+   ========================================================================== */
+:root{
+  --roxo:#A010E8; --roxo-escuro:#7B0EB4; --roxo-tinta:#F8F0FE; --roxo-borda:#EBD9FB;
+  --amarelo:#E8D500; --amarelo-fundo:#FDFAD6;
+  --tinta:#1C1B19; --cinza:#5C5F66; --linha:#EAE6F0; --branco:#fff;
+  --erro:#C22B2B; --ok:#1E7A4C;
+  --raio:18px; --max:720px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--branco);color:var(--tinta);
+  font-family:"DM Sans",system-ui,-apple-system,sans-serif;
+  font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:Rubik,system-ui,sans-serif;line-height:1.15;margin:0;font-weight:800}
+p{margin:0}
+img{max-width:100%;display:block}
+.env{width:100%;max-width:var(--max);margin:0 auto;padding:0 20px}
+
+/* ---------- cabeçalho ---------- */
+header{border-bottom:1px solid var(--linha);background:#fff}
+.barra{display:flex;align-items:center;gap:9px;padding:12px 20px;max-width:var(--max);margin:0 auto}
+.barra .estrela{font-size:26px;line-height:1}
+.barra span{font-family:Rubik,sans-serif;font-weight:800;font-size:15px;line-height:1.02;color:var(--roxo)}
+
+/* ---------- passos ---------- */
+.passo{display:none;padding:32px 0 60px}
+.passo.ativo{display:block}
+.chip{display:inline-block;background:var(--roxo-tinta);border:1px solid var(--roxo-borda);
+  color:var(--roxo);font-weight:700;font-size:13.5px;border-radius:999px;padding:7px 15px;margin-bottom:16px}
+h1{font-size:clamp(27px,7vw,36px)}
+h2{font-size:20px;margin:30px 0 10px}
+.sub{margin-top:14px;color:var(--cinza);font-size:18px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:Rubik,sans-serif;font-weight:700;font-size:17px;text-decoration:none;
+  padding:17px 26px;border-radius:999px;border:2px solid transparent;cursor:pointer;
+  min-height:56px;transition:transform .12s ease,background .15s ease;background:var(--roxo);color:#fff;
+  box-shadow:0 8px 22px rgba(160,16,232,.28)}
+.btn:hover{background:var(--roxo-escuro)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{background:#CFC7D6;box-shadow:none;cursor:not-allowed}
+.btn.ghost{background:#fff;color:var(--roxo);border-color:var(--roxo-borda);box-shadow:none}
+.btn.ghost:hover{background:var(--roxo-tinta)}
+.btn.bloco{display:flex;width:100%;margin-top:26px}
+.voltar{display:inline-block;margin-top:18px;color:var(--cinza);font-size:15px;
+  text-decoration:underline;text-underline-offset:3px;cursor:pointer;background:none;border:0;font-family:inherit}
+
+.cartao{border:1px solid var(--linha);border-radius:var(--raio);padding:20px;margin-top:16px;background:#fff}
+.cartao.tinta{background:var(--roxo-tinta);border-color:var(--roxo-borda)}
+.cartao.aviso{background:var(--amarelo-fundo);border-color:#E9DE7A}
+.cartao h3{font-size:17px;font-weight:700;margin-bottom:6px}
+.cartao p{color:var(--cinza);font-size:16px}
+
+.lista{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:11px}
+.lista li{display:flex;gap:12px;align-items:flex-start;font-size:16px;line-height:1.5}
+.lista li .b{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--roxo-tinta);
+  color:var(--roxo);font-family:Rubik,sans-serif;font-weight:800;font-size:13px;
+  display:flex;align-items:center;justify-content:center;margin-top:1px}
+
+label.caixa{display:flex;gap:12px;align-items:flex-start;margin-top:18px;cursor:pointer;
+  background:#fff;border:2px solid var(--roxo-borda);border-radius:14px;padding:16px;font-size:16px}
+label.caixa input{margin-top:3px;width:20px;height:20px;accent-color:var(--roxo);flex:0 0 auto}
+
+.campos{display:grid;gap:14px;margin-top:22px}
+@media(min-width:560px){.campos{grid-template-columns:1fr 1fr}}
+.campo label{display:block;font-size:14px;font-weight:700;color:var(--cinza);margin-bottom:6px}
+.campo input,.campo select{width:100%;padding:15px 18px;font-size:16px;font-family:inherit;
+  border:2px solid var(--roxo-borda);border-radius:14px;background:#fff}
+.campo input:focus,.campo select:focus{outline:3px solid rgba(160,16,232,.3);outline-offset:1px;border-color:var(--roxo)}
+.dica{font-size:14px;color:var(--cinza);margin-top:6px}
+
+/* ---------- preparo: câmera ---------- */
+.camwrap{position:relative;margin-top:18px;border-radius:var(--raio);overflow:hidden;background:#111;aspect-ratio:4/3}
+.camwrap video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.guia{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center}
+.guia .oval{width:44%;height:62%;border:3px dashed rgba(255,255,255,.85);border-radius:50%;
+  margin-top:-4%;box-shadow:0 0 0 2000px rgba(0,0,0,.28)}
+.guia .txt{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#fff;
+  font-size:14px;text-shadow:0 1px 4px rgba(0,0,0,.7)}
+
+.checks{display:grid;gap:10px;margin-top:18px}
+.check{display:flex;gap:11px;align-items:center;font-size:16px;padding:13px 15px;
+  border:1px solid var(--linha);border-radius:14px}
+.check .m{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:#EFEDF2;color:var(--cinza);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.check.ok .m{background:#DFF3E8;color:var(--ok)}
+.check.ruim .m{background:#FBE3E3;color:var(--erro)}
+
+/* ---------- palco do experimento ---------- */
+#palco{position:fixed;inset:0;background:#fff;z-index:100;display:none}
+#palco.ligado{display:block}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:6}
+#flash.on{opacity:1}
+/* Atrator central. De propósito NÃO é a estrela da marca: a estrela também é
+   uma das 32 figuras do teste, e treinar a criança a olhar para uma estrela no
+   centro contaminaria o trial em que a estrela é o alvo. Um alvo concêntrico
+   pulsante faz o mesmo trabalho sem competir com nenhum estímulo. */
+#fixacao{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(15vw,120px);height:min(15vw,120px);border-radius:50%;
+  background:radial-gradient(circle,#A010E8 0 26%,#E8D500 26% 52%,#A010E8 52% 74%,#fff 74% 100%);
+  opacity:0;transition:opacity .12s;z-index:4}
+#fixacao.on{opacity:1;animation:pulsa .85s ease-in-out infinite}
+@keyframes pulsa{0%,100%{transform:translate(-50%,-50%) scale(.88)}50%{transform:translate(-50%,-50%) scale(1.12)}}
+.figura{position:absolute;top:50%;transform:translateY(-50%);width:34vw;height:34vw;
+  max-width:420px;max-height:420px;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .1s;z-index:3}
+.figura.on{opacity:1}
+#esq{left:7vw}
+#dir{right:7vw}
+.figura img{width:100%;height:100%;object-fit:contain}
+.figura .emoji{font-size:min(26vw,300px);line-height:1}
+#pontinho{position:absolute;top:14px;right:16px;width:9px;height:9px;border-radius:50%;
+  background:#E9A8A8;display:none;z-index:7}
+#pontinho.on{display:block}
+#contador{position:absolute;top:10px;left:14px;font-size:12px;color:#C9C5CF;z-index:7}
+#sairDica{position:absolute;bottom:10px;left:14px;font-size:12px;color:#C9C5CF;z-index:7}
+#pausa{position:absolute;inset:0;background:#fff;display:none;align-items:center;justify-content:center;z-index:8}
+#pausa.on{display:flex}
+.p-cx{max-width:420px;text-align:center;padding:20px}
+.p-t{font-family:Rubik,sans-serif;font-weight:800;font-size:30px;color:var(--roxo)}
+.p-s{color:var(--cinza);margin:12px 0 22px}
+
+/* ---------- avançado ---------- */
+#avancado{display:none;margin-top:26px;border-top:1px dashed var(--linha);padding-top:22px}
+#avancado.on{display:block}
+#avancado textarea{width:100%;min-height:180px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:13px;padding:14px;border:2px solid var(--roxo-borda);border-radius:14px;line-height:1.5}
+.grade4{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
+@media(min-width:560px){.grade4{grid-template-columns:repeat(4,1fr)}}
+.grade4 .campo input{padding:12px 14px}
+
+.rodape{border-top:1px solid var(--linha);padding:26px 0 50px;color:var(--cinza);font-size:14px;margin-top:40px}
+.rodape a{color:var(--roxo)}
+.erro{color:var(--erro);font-size:15px;margin-top:12px}
+code{background:var(--roxo-tinta);padding:2px 6px;border-radius:6px;font-size:14px}
 </style>
 </head>
 <body>
-<div id="wrap">
-  <h1>Teste de eficiência de processamento linguístico</h1>
-  <p class="sub">Paradigma <i>looking-while-listening</i> (Fernald, Stanford).
-    Duas figuras, uma frase que nomeia uma delas, e a medida de quão rápido os olhos
-    vão para a certa.</p>
 
-  <a class="cartao" href="../apresentador/index.html">
-    <span class="quem">computador ou tablet</span>
-    <h2>Apresentador →</h2>
-    <p>Mostra as figuras, toca as frases e marca cada trial com um bipe de
-       sincronização. Pode gravar pela webcam ou deixar a gravação para o celular.</p>
-  </a>
+<header>
+  <div class="barra">
+    <span class="estrela" aria-hidden="true">⭐</span>
+    <span>Palavras<br>Brilhantes</span>
+  </div>
+</header>
 
-  <a class="cartao" href="../camera/index.html">
-    <span class="quem">celular</span>
-    <h2>Câmera →</h2>
-    <p>Filma o rosto da criança enquanto as figuras aparecem na outra tela.
-       Costuma dar imagem e taxa de quadros melhores que a webcam do notebook.</p>
-  </a>
+<main class="env">
 
-  <a class="cartao" href="../codificador/index.html">
-    <span class="quem">computador</span>
-    <h2>Codificador de olhar →</h2>
-    <p>Codificação manual quadro a quadro e cálculo de concordância com o
-       codificador automático. É o padrão-ouro de validação.</p>
-  </a>
+<!-- ============================ 1. ABERTURA ============================ -->
+<section class="passo ativo" id="p-intro">
+  <span class="chip">Teste de 5 minutos · 15 a 36 meses</span>
+  <h1>Quão rápido seu filho reconhece uma palavra?</h1>
+  <p class="sub">Seu filho vê duas fotos e ouve o nome de uma delas. A câmera grava o rostinho dele
+     e nós medimos, em milésimos de segundo, quanto tempo os olhos levam para achar a foto certa.</p>
 
-  <div class="aviso">
-    <b>O celular é a câmera, nunca a tela.</b> O que decide é a separação angular entre
-    as duas figuras: quanto maior, mais claro fica o movimento dos olhos para quem
-    codifica. Medido neste layout:
-    <table>
-      <tr><td>celular 6"</td><td>a 45 cm</td><td class="ruim">4,3°</td></tr>
-      <tr><td>tablet 10"</td><td>a 55 cm</td><td class="bom">11,2°</td></tr>
-      <tr><td>notebook 15"</td><td>a 55 cm</td><td class="bom">17,8°</td></tr>
-      <tr><td>TV 40"</td><td>a 90 cm</td><td class="bom">27,6°</td></tr>
-    </table>
-    Abaixo de uns 10° a distinção esquerda/direita fica frágil. Por isso o celular
-    grava, e as figuras aparecem numa tela maior.
+  <div class="cartao tinta">
+    <h3>Por que isso importa</h3>
+    <p>A velocidade com que uma criança reconhece palavras faladas aos 2 anos é um dos melhores
+       preditores conhecidos de vocabulário e linguagem anos depois. É uma janela para o
+       processamento, não um teste de acerto e erro — não existe passar ou reprovar aqui.</p>
   </div>
 
-  <details>
-    <summary>Como as peças se encaixam</summary>
-    <p>O apresentador agenda o bipe e a frase no mesmo relógio de áudio, então o
-      intervalo entre eles é exato. Seja a webcam ou o celular que grave, o bipe fica na
-      trilha de áudio do vídeo — e é ele que ancora cada palavra ao instante certo da
-      gravação. Nada depende de quando a gravação começou.</p>
-    <p>Ao final você tem dois arquivos: o <b>vídeo</b> e o <b>_eventos.csv</b>. Os dois
-      vão para a mesma pasta no computador, e o processamento local
-      (<code>3-PROCESSAR SESSAO.cmd</code>) calcula tempo de reação e acurácia.</p>
-  </details>
+  <h2>Você vai precisar de</h2>
+  <ul class="lista">
+    <li><span class="b">1</span><span><strong>Um computador ou tablet</strong> com câmera, de preferência no Chrome. Celular funciona mal: a tela é pequena demais para separar as duas figuras.</span></li>
+    <li><span class="b">2</span><span><strong>Seu filho no seu colo</strong>, a mais ou menos 50–60 cm da tela, de frente para ela.</span></li>
+    <li><span class="b">3</span><span><strong>Luz no rosto dele</strong> e nenhuma janela forte atrás — contraluz apaga os olhos e a medida se perde.</span></li>
+    <li><span class="b">4</span><span><strong>Silêncio</strong> e cinco minutos sem interrupção. Um irmão passando na frente estraga o trial.</span></li>
+    <li><span class="b">5</span><span><strong>Som ligado, sem fone.</strong> O teste toca um bipe curto antes de cada frase e o microfone grava esse bipe — é ele que sincroniza o vídeo com as palavras. Com fone de ouvido, a medida se perde.</span></li>
+  </ul>
 
-  <details>
-    <summary>Privacidade</summary>
-    <p>Estas páginas são estáticas: <b>nenhum vídeo, áudio ou dado sai do aparelho.</b>
-      A gravação fica na memória do navegador até você baixá-la, e o processamento é
-      feito no seu computador, sem nuvem e sem serviço externo. Não há analytics nem
-      qualquer envio.</p>
-    <p>Vídeo de rosto de criança é dado pessoal de menor. Use com consentimento
-      assinado dos responsáveis, com identificadores anônimos, e apague quando não
-      precisar mais.</p>
-  </details>
+  <div class="cartao aviso">
+    <h3>Uma coisa que a gente pede</h3>
+    <p>Durante o teste, não aponte, não fale e não reaja quando a figura certa aparecer. Se você
+       ajudar, a medida vira a sua velocidade, não a dele.</p>
+  </div>
 
-  <footer>
-    Instrumento de pesquisa, não avaliação diagnóstica. Uma medida isolada de uma
-    criança tem variabilidade alta e não deve ser interpretada sozinha.
-  </footer>
+  <button class="btn bloco" onclick="ir('p-consent')">Começar</button>
+</section>
+
+<!-- ========================== 2. CONSENTIMENTO ========================== -->
+<section class="passo" id="p-consent">
+  <span class="chip">Antes de tudo</span>
+  <h1>O que acontece com o vídeo</h1>
+
+  <div class="cartao">
+    <h3>Nesta versão, o vídeo não sai do seu aparelho</h3>
+    <p>A gravação acontece dentro do navegador. Não existe servidor recebendo nada: quando o teste
+       acaba, dois arquivos são baixados na sua pasta de downloads — o vídeo e uma planilha com os
+       tempos. Você decide se manda para nós ou se apaga.</p>
+  </div>
+  <div class="cartao">
+    <h3>Para que serve o vídeo</h3>
+    <p>Só para uma coisa: um programa lê o vídeo quadro a quadro e anota, 30 vezes por segundo,
+       para que lado seu filho estava olhando. O microfone entra junto só para gravar o bipe de
+       sincronização. Sem o vídeo do rosto, não há medida — é assim que este teste funciona nos
+       laboratórios que o criaram.</p>
+  </div>
+  <div class="cartao">
+    <h3>Se preferir não gravar</h3>
+    <p>Você pode rodar o teste com a câmera desligada. Vai ver como ele é, mas não sai medida
+       nenhuma — apenas os tempos dos estímulos.</p>
+  </div>
+
+  <label class="caixa">
+    <input type="checkbox" id="okConsent">
+    <span>Eu li o acima, sou responsável pela criança e concordo em gravar o rosto dela durante o teste,
+          sabendo que o arquivo fica comigo.</span>
+  </label>
+
+  <div class="campos">
+    <div class="campo">
+      <label for="pid">Nome ou apelido da criança</label>
+      <input id="pid" type="text" placeholder="ex.: Nina" autocomplete="off">
+      <p class="dica">Usado só para nomear os arquivos.</p>
+    </div>
+    <div class="campo">
+      <label for="idade">Idade em meses</label>
+      <input id="idade" type="number" min="6" max="72" placeholder="ex.: 24" inputmode="numeric">
+      <p class="dica">O teste foi desenhado para 15 a 36 meses.</p>
+    </div>
+  </div>
+
+  <button class="btn bloco" id="btnConsent" disabled onclick="ir('p-preparo')">Continuar</button>
+  <button class="voltar" onclick="ir('p-intro')">Voltar</button>
+</section>
+
+<!-- ============================ 3. PREPARO ============================ -->
+<section class="passo" id="p-preparo">
+  <span class="chip">Preparo</span>
+  <h1>Vamos conferir câmera e som</h1>
+  <p class="sub">Ajuste até o rostinho dele caber dentro do oval, com os olhos na altura da linha do meio.</p>
+
+  <div class="camwrap">
+    <video id="previa" autoplay muted playsinline></video>
+    <div class="guia">
+      <div class="oval"></div>
+      <div class="txt">Rosto dentro do oval · olhos bem visíveis · luz de frente</div>
+    </div>
+  </div>
+
+  <div class="campo" style="margin-top:14px">
+    <label for="camSel">Câmera</label>
+    <select id="camSel"></select>
+  </div>
+
+  <div class="checks">
+    <div class="check" id="ck-cam"><span class="m">—</span><span>Câmera autorizada</span></div>
+    <div class="check" id="ck-mic"><span class="m">—</span><span>Microfone ativo (grava o bipe de sincronização)</span></div>
+    <div class="check" id="ck-som"><span class="m">—</span><span>Som testado — você ouviu o bipe e a voz?</span></div>
+    <div class="check" id="ck-fig"><span class="m">—</span><span>Estímulos carregados</span></div>
+  </div>
+
+  <button class="btn ghost bloco" id="btnSom" style="margin-top:16px">Testar o som</button>
+
+  <label class="caixa">
+    <input type="checkbox" id="semCam">
+    <span>Rodar sem gravar (só para ver como é — não gera medida). Use também se o celular for a câmera.</span>
+  </label>
+
+  <div id="erroPrep" class="erro"></div>
+
+  <button class="btn bloco" id="btnIniciar" disabled>Iniciar o teste</button>
+  <p class="dica" style="text-align:center;margin-top:12px">
+    O teste entra em tela cheia e dura cerca de 5 minutos. Aperte <code>Esc</code> a qualquer momento para parar.</p>
+  <button class="voltar" onclick="ir('p-consent')">Voltar</button>
+
+  <!-- painel técnico: só com ?avancado=1 -->
+  <div id="avancado">
+    <h2>Painel técnico</h2>
+    <p class="dica">Parâmetros de Fernald, Zangl, Portillo &amp; Marchman (2008). Mexer aqui quebra a
+       comparabilidade com a literatura — a janela de análise 300–1800 ms depende deles.</p>
+    <div class="grade4">
+      <div class="campo"><label>Fixação (ms)</label><input id="tFix" type="number" value="1000"></div>
+      <div class="campo"><label>Pré-exposição (ms)</label><input id="tPre" type="number" value="2000"></div>
+      <div class="campo"><label>Pós-onset (ms)</label><input id="tPost" type="number" value="3000"></div>
+      <div class="campo"><label>ITI (ms)</label><input id="tIti" type="number" value="1000"></div>
+    </div>
+    <div class="grade4">
+      <div class="campo"><label>Pausa após N trials (0 = sem)</label><input id="tBreak" type="number" value="16"></div>
+      <div class="campo"><label>Rodar só os primeiros N (0 = todos)</label><input id="nMax" type="number" value="0"></div>
+      <div class="campo"><label>Ordem</label><select id="ordem"><option>A</option><option>B</option></select></div>
+    </div>
+    <label class="caixa"><input type="checkbox" id="embaralhar" checked><span>Embaralhar com restrição (nunca 3 alvos seguidos do mesmo lado, nunca o mesmo par em sequência)</span></label>
+    <div class="campo" style="margin-top:16px">
+      <label>Trials — <code>alvo | imgEsquerda | imgDireita | ladoAlvo | audio | onset_ms</code> (vem de <code>../apresentador/protocolo.txt</code>)</label>
+      <textarea id="trials"></textarea>
+    </div>
+    <p class="dica">Ferramentas técnicas (apresentador, câmera de celular, codificador): <a href="ferramentas.html">/teste/ferramentas</a></p>
+  </div>
+</section>
+
+<!-- ============================== 4. FIM ============================== -->
+<section class="passo" id="p-fim">
+  <span class="chip">Terminou</span>
+  <h1>Pronto. Agora os arquivos.</h1>
+  <p class="sub" id="resumoFim"></p>
+
+  <button class="btn bloco" id="btnVideo">Baixar o vídeo (.webm)</button>
+  <button class="btn ghost bloco" id="btnCsv" style="margin-top:12px">Baixar os tempos (.csv)</button>
+
+  <div class="cartao tinta" style="margin-top:26px">
+    <h3>O que fazer com eles</h3>
+    <p>Os dois arquivos andam juntos — o CSV sozinho não vale nada e o vídeo sozinho também não.
+       Mande os dois para quem for rodar a leitura do olhar. O bipe gravado no vídeo é o que
+       ancora cada palavra ao instante certo; o resultado (velocidade média e proporção de
+       acerto) sai da combinação dos dois.</p>
+  </div>
+
+  <button class="btn ghost bloco" style="margin-top:16px" onclick="location.reload()">Fazer outro teste</button>
+</section>
+
+</main>
+
+<footer class="rodape">
+  <div class="env">
+    <strong>Palavras Brilhantes</strong> · Teste de processamento linguístico<br>
+    Paradigma <em>looking-while-listening</em> — Fernald, Zangl, Portillo &amp; Marchman (2008).
+    Janela de análise 300–1800 ms após o início da palavra-alvo.
+  </div>
+</footer>
+
+<!-- ========================= PALCO DO EXPERIMENTO ========================= -->
+<div id="palco">
+  <div id="flash"></div>
+  <div id="contador"></div>
+  <div id="pontinho"></div>
+  <div id="fixacao"></div>
+  <div class="figura" id="esq"></div>
+  <div class="figura" id="dir"></div>
+  <div id="sairDica">Esc para parar · Espaço pausa</div>
+  <div id="pausa">
+    <div class="p-cx">
+      <div class="p-t">Pausa</div>
+      <div class="p-s">Respira, ajeita a criança no colo. Quando estiverem prontos, toque no botão.</div>
+      <button class="btn" id="btnContinuar">Continuar</button>
+    </div>
+  </div>
 </div>
+
+<script>
+"use strict";
+/* =========================================================================
+   /teste — porta de entrada para famílias, sobre o motor do apresentador.
+
+   TEMPORIZAÇÃO (idêntica a apresentador/index.html — não mexer):
+   O bipe de sincronização e a frase são agendados no MESMO relógio do
+   AudioContext. No vídeo gravado, sincronizar.py acha o bipe; o instante da
+   palavra-alvo é  t_bipe + gap_bipe_frase_ms + onset_ms_dentro_do_clipe.
+   Nada depende de performance.now() nem de quando o gravador começou.
+
+   Os estímulos (fotos, WAVs, onsets) vêm de ../apresentador/protocolo.txt.
+   O CSV de saída tem as mesmas colunas do apresentador, então
+   sincronizar.py / analisar.py funcionam sem adaptação.
+   ========================================================================= */
+const $ = id => document.getElementById(id);
+const agora = () => performance.now();
+const dormir = ms => new Promise(r => setTimeout(r, ms));
+const BASE = '../apresentador/';
+const BEEP_HZ = 1000, BEEP_MS = 80, BEEP_GAIN = 0.25;
+
+let camStream = null, gravador = null, pedacos = [], videoBlob = null;
+let recT0 = 0, ac = null;
+const buffers = new Map();
+let eventos = [], abortado = false, pausado = false;
+let protocoloOk = false, estimulosOk = false;
+
+/* ---------------------------- navegação ---------------------------- */
+function ir(id){
+  document.querySelectorAll('.passo').forEach(s => s.classList.remove('ativo'));
+  $(id).classList.add('ativo');
+  window.scrollTo({top:0, behavior:'instant'});
+  if(id === 'p-preparo'){ abrirCamera(); conferirEstimulos(); }
+}
+$('okConsent').addEventListener('change', e => { $('btnConsent').disabled = !e.target.checked; });
+
+function marca(id, estado, texto){
+  const el = $(id);
+  el.classList.remove('ok','ruim');
+  if(estado === 'ok'){ el.classList.add('ok'); el.querySelector('.m').textContent = '✓'; }
+  else if(estado === 'ruim'){ el.classList.add('ruim'); el.querySelector('.m').textContent = '!'; }
+  else { el.querySelector('.m').textContent = '—'; }
+  if(texto) el.lastElementChild.textContent = texto;
+}
+
+/* ---------------------------- protocolo ---------------------------- */
+async function carregarProtocolo(){
+  const r = await fetch(BASE + 'protocolo.txt', {cache:'no-store'});
+  if(!r.ok) throw new Error('protocolo.txt não encontrado (' + r.status + ')');
+  const txt = (await r.text()).trim();
+  if(!txt) throw new Error('protocolo.txt vazio');
+  $('trials').value = txt;
+  protocoloOk = true;
+}
+function lerTrials(){
+  const linhas = $('trials').value.split('\n').map(l => l.trim()).filter(Boolean);
+  const out = [];
+  for(const l of linhas){
+    if(l.startsWith('#')) continue;
+    const p = l.split('|').map(s => s.trim());
+    if(p.length < 6) continue;
+    out.push({alvo:p[0], esq:p[1], dir:p[2],
+              lado: p[3].toLowerCase().startsWith('e') ? 'left' : 'right',
+              audio:p[4], onset: parseFloat(p[5])});
+  }
+  const ordenados = $('embaralhar').checked ? embaralhaComRestricao(out) : out;
+  const n = parseInt($('nMax').value) || 0;
+  return (n > 0 && n < ordenados.length) ? ordenados.slice(0, n) : ordenados;
+}
+/* Construção gulosa (mesma do apresentador): nunca 3 alvos seguidos do mesmo
+   lado, nunca o mesmo par de imagens em trials consecutivos. */
+function embaralhaComRestricao(arr){
+  const chave = t => [t.esq, t.dir].sort().join('~');
+  const misture = a => { for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+  for(let tent=0; tent<200; tent++){
+    const pool = misture(arr.slice()); const out = []; let travou=false;
+    while(pool.length){
+      const n = out.length;
+      const cands = pool.filter(t =>
+        !(n>=1 && chave(t)===chave(out[n-1])) &&
+        !(n>=2 && t.lado===out[n-1].lado && t.lado===out[n-2].lado));
+      if(!cands.length){ travou=true; break; }
+      const rest = {}; pool.forEach(t => { const k=chave(t); rest[k]=(rest[k]||0)+1; });
+      let esc = cands[0];
+      for(const c of cands) if(rest[chave(c)] > rest[chave(esc)]) esc = c;
+      out.push(esc); pool.splice(pool.indexOf(esc),1);
+    }
+    if(!travou && out.length===arr.length) return out;
+  }
+  return misture(arr.slice());
+}
+
+/* ---------------------------- estímulos ---------------------------- */
+async function ensureAC(){
+  if(!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+  if(ac.state === 'suspended') await ac.resume();
+  return ac;
+}
+async function loadAudio(path){
+  if(buffers.has(path)) return buffers.get(path);
+  const r = await fetch(path);
+  if(!r.ok) throw new Error('áudio não encontrado: ' + path);
+  const buf = await (await ensureAC()).decodeAudioData(await r.arrayBuffer());
+  buffers.set(path, buf); return buf;
+}
+function preImg(src){ return new Promise(res => { const im = new Image(); im.onload=()=>res(true); im.onerror=()=>res(false); im.src = src; }); }
+
+async function conferirEstimulos(){
+  marca('ck-fig', null, 'Carregando fotos e áudios…');
+  try{
+    if(!protocoloOk) await carregarProtocolo();
+    const ts = lerTrialsSemEmbaralhar();
+    const imgs = [...new Set(ts.flatMap(t => [t.esq, t.dir]))];
+    const auds = [...new Set(ts.map(t => t.audio))];
+    const rImg = await Promise.all(imgs.map(p => preImg(BASE + p)));
+    const faltaImg = imgs.filter((p,i) => !rImg[i]);
+    // decodeAudioData exige AudioContext; se ainda não houve gesto do usuário
+    // ele pode ficar suspenso, mas o decode funciona mesmo assim.
+    const faltaAud = [];
+    for(const a of auds){ try{ await loadAudio(BASE + a); }catch(e){ faltaAud.push(a); } }
+    if(faltaImg.length || faltaAud.length){
+      estimulosOk = false;
+      marca('ck-fig','ruim', `Faltam ${faltaImg.length} foto(s) e ${faltaAud.length} áudio(s) — recarregue a página`);
+    }else{
+      estimulosOk = true;
+      marca('ck-fig','ok', `${imgs.length} fotos e ${auds.length} áudios prontos (${ts.length} trials)`);
+    }
+  }catch(e){
+    estimulosOk = false;
+    marca('ck-fig','ruim','Não consegui carregar os estímulos: ' + e.message);
+  }
+  verificar();
+}
+function lerTrialsSemEmbaralhar(){
+  const emb = $('embaralhar').checked; $('embaralhar').checked = false;
+  const nMax = $('nMax').value; $('nMax').value = '0';
+  const t = lerTrials();
+  $('embaralhar').checked = emb; $('nMax').value = nMax;
+  return t;
+}
+
+/* ---------------------------- câmera ---------------------------- */
+function camConstraints(deviceId){
+  return {
+    // Áudio de propósito: é o que grava o bipe. Os três processamentos ficam
+    // DESLIGADOS ou o bipe vindo do alto-falante é cancelado.
+    audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false },
+    video: Object.assign({ width:{ideal:1280}, height:{ideal:720}, frameRate:{ideal:60} },
+                         deviceId ? {deviceId:{exact:deviceId}} : {})
+  };
+}
+async function listarCameras(){
+  try{
+    const ds = await navigator.mediaDevices.enumerateDevices();
+    const cams = ds.filter(d => d.kind === 'videoinput');
+    const atual = $('camSel').value;
+    $('camSel').innerHTML = cams.map((d,i) => `<option value="${d.deviceId}">${d.label || ('Câmera ' + (i+1))}</option>`).join('');
+    if(atual) $('camSel').value = atual;
+  }catch(e){}
+}
+async function abrirCamera(){
+  if($('semCam').checked){
+    pararCamera(); marca('ck-cam','ok','Rodando sem gravação'); marca('ck-mic',null,'Sem gravação — o bipe fica na trilha de quem estiver gravando'); verificar(); return;
+  }
+  try{
+    pararCamera();
+    camStream = await navigator.mediaDevices.getUserMedia(camConstraints($('camSel').value));
+    $('previa').srcObject = camStream;
+    await listarCameras();
+    const v = camStream.getVideoTracks()[0], a = camStream.getAudioTracks()[0];
+    const s = v ? v.getSettings() : {};
+    const fps = s.frameRate ? Math.round(s.frameRate) : null;
+    marca('ck-cam','ok', `Câmera pronta — ${s.width||'?'}×${s.height||'?'}${fps ? ' a ' + fps + ' fps' : ''}${fps && fps < 25 ? ' (baixo: a resolução temporal piora)' : ''}`);
+    if(a) marca('ck-mic','ok','Microfone ativo — o bipe será gravado');
+    else  marca('ck-mic','ruim','Sem microfone — o bipe NÃO será gravado e a sincronização vira manual');
+    $('erroPrep').textContent = '';
+  }catch(e){
+    marca('ck-cam','ruim','Câmera bloqueada — autorize câmera e microfone no cadeado da barra de endereço');
+    marca('ck-mic','ruim','Microfone bloqueado');
+    $('erroPrep').textContent = 'Não consegui abrir câmera/microfone: ' + e.message;
+  }
+  verificar();
+}
+function pararCamera(){ if(camStream){ camStream.getTracks().forEach(t => t.stop()); camStream = null; } }
+$('camSel').addEventListener('change', abrirCamera);
+$('semCam').addEventListener('change', abrirCamera);
+
+/* ---------------------------- áudio ---------------------------- */
+function agendaBipe(t0){
+  const o = ac.createOscillator(), g = ac.createGain(), d = BEEP_MS/1000;
+  o.frequency.value = BEEP_HZ;
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(BEEP_GAIN, t0+0.004);
+  g.gain.setValueAtTime(BEEP_GAIN, t0+d-0.004);
+  g.gain.linearRampToValueAtTime(0, t0+d);
+  o.connect(g); g.connect(ac.destination);
+  o.start(t0); o.stop(t0+d+0.01);
+}
+function agendaFrase(buf, t){ const s = ac.createBufferSource(); s.buffer = buf; s.connect(ac.destination); s.start(t); }
+async function esperaAte(tAC){ const ms = (tAC - ac.currentTime)*1000; if(ms > 0) await dormir(ms); }
+
+$('btnSom').addEventListener('click', async () => {
+  $('btnSom').disabled = true; $('btnSom').textContent = 'Tocando…';
+  try{
+    await ensureAC();
+    const ts = lerTrialsSemEmbaralhar();
+    const t0 = ac.currentTime + 0.1;
+    agendaBipe(t0);
+    if(ts.length){ const buf = await loadAudio(BASE + ts[0].audio); agendaFrase(buf, t0 + 0.6); await dormir(600 + buf.duration*1000); }
+    else await dormir(700);
+    marca('ck-som','ok','Som testado');
+  }catch(e){
+    marca('ck-som','ruim','Não consegui tocar o áudio: ' + e.message);
+  }
+  $('btnSom').disabled = false; $('btnSom').textContent = 'Testar o som de novo';
+  verificar();
+});
+
+function verificar(){
+  const camOk = $('semCam').checked || !!camStream;
+  const somOk = $('ck-som').classList.contains('ok');
+  $('btnIniciar').disabled = !(camOk && somOk && estimulosOk);
+}
+
+/* ---------------------------- gravação ---------------------------- */
+function iniciarGravacao(){
+  return new Promise(resolve => {
+    if($('semCam').checked || !camStream){ recT0 = agora(); resolve(); return; }
+    pedacos = [];
+    let mime = 'video/webm;codecs=vp9,opus';
+    if(!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm;codecs=vp8,opus';
+    if(!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
+    gravador = new MediaRecorder(camStream, {mimeType:mime});
+    gravador.ondataavailable = e => { if(e.data.size) pedacos.push(e.data); };
+    gravador.onstart = () => { recT0 = agora(); resolve(); };
+    gravador.start(1000);
+  });
+}
+function pararGravacao(){
+  return new Promise(resolve => {
+    if(!gravador || gravador.state === 'inactive'){ resolve(); return; }
+    gravador.onstop = () => { videoBlob = new Blob(pedacos, {type:'video/webm'}); resolve(); };
+    gravador.stop();
+  });
+}
+// só para conferência humana, NUNCA para a medida
+const vtAprox = () => Math.round(recT0 ? agora() - recT0 : agora());
+function log(o){ eventos.push(o); }
+function desenhar(box, caminho){ box.innerHTML = `<img src="${BASE + caminho}" alt="">`; }
+
+/* ---------------------------- sessão ---------------------------- */
+$('btnIniciar').addEventListener('click', rodar);
+$('btnContinuar').addEventListener('click', () => { pausado = false; });
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') abortado = true;
+  if(e.key === ' ' && $('palco').classList.contains('ligado')){ e.preventDefault(); pausado = !pausado; }
+});
+
+async function rodar(){
+  const trials = lerTrials();
+  if(!trials.length){ $('erroPrep').textContent = 'Nenhum trial válido na lista.'; return; }
+  await ensureAC();
+  try{ for(const t of trials){ if(!t.audio || isNaN(t.onset)) throw new Error(`trial "${t.alvo}" sem áudio/onset`); await loadAudio(BASE + t.audio); } }
+  catch(e){ $('erroPrep').textContent = 'Não dá para iniciar: ' + e.message; return; }
+
+  eventos = []; abortado = false; pausado = false;
+  const pid = ($('pid').value || 'anon').trim();
+  const meta = {pid, idade_meses: ($('idade').value||'').trim(), ordem: $('ordem').value, modo_audio: 'arquivo'};
+  const tFix=+$('tFix').value, tPre=+$('tPre').value, tPost=+$('tPost').value,
+        tIti=+$('tIti').value, nBreak=+$('tBreak').value;
+
+  $('palco').classList.add('ligado');
+  try{ await document.documentElement.requestFullscreen(); }catch(e){}
+  await iniciarGravacao();
+  if(camStream && !$('semCam').checked) $('pontinho').classList.add('on');
+  await dormir(800); // deixa o gravador estabilizar antes do primeiro bipe
+
+  for(let i = 0; i < trials.length && !abortado; i++){
+    const t = trials[i];
+    $('contador').textContent = `${i+1}/${trials.length}`;
+    while(pausado && !abortado){ $('pausa').classList.add('on'); await dormir(100); }
+    $('pausa').classList.remove('on');
+    if(abortado) break;
+
+    // --- agenda TODO o áudio do trial num único relógio ---
+    const gapMs = tFix + tPre;
+    const t0 = ac.currentTime + 0.25;
+    agendaBipe(t0);
+    agendaFrase(buffers.get(BASE + t.audio), t0 + gapMs/1000);
+    log(Object.assign({}, meta, {
+      trial:i+1, alvo:t.alvo, ladoAlvo:t.lado, fase:'bipe',
+      gap_bipe_frase_ms: gapMs, onset_no_clipe_ms: t.onset,
+      alvo_apos_bipe_ms: Math.round(gapMs + t.onset), rt_valido:'sim',
+      t_video_aprox_ms: vtAprox()
+    }));
+
+    // --- visual, ancorado no mesmo relógio ---
+    $('esq').classList.remove('on'); $('dir').classList.remove('on');
+    $('fixacao').classList.add('on');
+    await esperaAte(t0);
+    await esperaAte(t0 + tFix/1000);
+    $('fixacao').classList.remove('on');
+    if(abortado) break;
+
+    desenhar($('esq'), t.esq); desenhar($('dir'), t.dir);
+    $('esq').classList.add('on'); $('dir').classList.add('on');
+    log(Object.assign({}, meta, {trial:i+1, alvo:t.alvo, ladoAlvo:t.lado, fase:'imagens_on', t_video_aprox_ms: vtAprox()}));
+
+    await esperaAte(t0 + gapMs/1000);   // início da frase
+    await dormir(tPost);
+    if(abortado) break;
+
+    $('esq').classList.remove('on'); $('dir').classList.remove('on');
+    log(Object.assign({}, meta, {trial:i+1, alvo:t.alvo, ladoAlvo:t.lado, fase:'iti', t_video_aprox_ms: vtAprox()}));
+    await dormir(tIti);
+
+    if(nBreak > 0 && (i+1) % nBreak === 0 && i+1 < trials.length){
+      pausado = true;
+      log(Object.assign({}, meta, {trial:i+1, fase:'pausa', t_video_aprox_ms: vtAprox()}));
+    }
+  }
+
+  await pararGravacao();
+  $('pontinho').classList.remove('on'); $('pausa').classList.remove('on');
+  $('palco').classList.remove('ligado');
+  try{ if(document.fullscreenElement) await document.exitFullscreen(); }catch(e){}
+  pararCamera();
+
+  const n = eventos.filter(e => e.fase === 'bipe').length;
+  const mb = videoBlob ? (videoBlob.size / 1048576).toFixed(1) : 0;
+  $('resumoFim').textContent = abortado
+    ? `Teste interrompido em ${n} de ${trials.length} trials. O que foi gravado até aqui continua válido${videoBlob ? ' — vídeo de ' + mb + ' MB' : ''}.`
+    : `${n} trials, tudo registrado${videoBlob ? ' — vídeo de ' + mb + ' MB' : ''}. Baixe os dois arquivos abaixo.`;
+  $('btnVideo').style.display = videoBlob ? '' : 'none';
+  ir('p-fim');
+}
+
+/* ---------------------------- saída (colunas do apresentador) ---------------------------- */
+const COLS = ['pid','idade_meses','ordem','modo_audio','trial','alvo','ladoAlvo','fase',
+              'gap_bipe_frase_ms','onset_no_clipe_ms','alvo_apos_bipe_ms','rt_valido',
+              't_video_aprox_ms','obs'];
+function csv(){
+  const esc = v => { v = v==null?'':String(v); return (v.includes(',')||v.includes('"')||v.includes('\n')) ? '"'+v.replaceAll('"','""')+'"' : v; };
+  return COLS.join(',') + '\n' + eventos.map(e => COLS.map(c => esc(e[c])).join(',')).join('\n');
+}
+function baixar(blob, nome){ const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); }
+let nomeSessao = null;
+function nomeBase(){
+  if(nomeSessao) return nomeSessao;
+  const pid = ($('pid').value || 'anon').trim().replace(/[^\w\-]+/g, '_');
+  const d = new Date(), p = n => String(n).padStart(2,'0');
+  nomeSessao = `LWL_${pid}_${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+  return nomeSessao;
+}
+$('btnVideo').addEventListener('click', () => { if(videoBlob) baixar(videoBlob, nomeBase() + '.webm'); });
+$('btnCsv').addEventListener('click', () => baixar(new Blob([csv()], {type:'text/csv;charset=utf-8'}), nomeBase() + '_eventos.csv'));
+
+/* ---------------------------- inicialização ---------------------------- */
+if(new URLSearchParams(location.search).get('avancado') === '1') $('avancado').classList.add('on');
+carregarProtocolo().catch(() => {});
+</script>
 </body>
 </html>
