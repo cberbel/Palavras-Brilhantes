@@ -92,8 +92,8 @@
       </div>
       <div class="row">
         <div><label>Voz do TTS</label><select id="voiceSel"></select></div>
-        <div><label>Frase do TTS</label><input id="carrier" value="Cadê o {alvo}? Olha o {alvo}!">
-          <small class="hint">use <b>{alvo}</b> onde entra o nome do objeto</small></div>
+        <div><label>Frase do TTS</label><input id="carrier" value="Cadê {art} {alvo}?">
+          <small class="hint">use <b>{alvo}</b> onde entra o nome do objeto e <b>{art}</b> para o artigo (o/a). Nomeie o alvo UMA vez só: a segunda nomeação embaralha a janela de análise.</small></div>
       </div>
     </fieldset>
 
@@ -214,13 +214,28 @@ let aborted=false, paused=false;
 
 /* ---------------- protocolo padrão: 32 trials contrabalanceados -------- */
 // 8 palavras, cada uma alvo 4x (2 à esquerda, 2 à direita).
-// Pares fixos, com categoria e sílaba inicial diferentes dentro do par.
+// Mesmos pares da lista A do montar_protocolo.py (o protocolo.txt do
+// repositório vence este fallback; ele só aparece se o arquivo não carregar).
 const PARES = [
-  ['gato','bola','🐱','⚽'],
-  ['cachorro','sapato','🐶','👟'],
-  ['banana','carro','🍌','🚗'],
+  ['gato','banana','🐱','🍌'],
+  ['bola','sapato','⚽','👟'],
+  ['cachorro','livro','🐶','📖'],
   ['pato','maçã','🦆','🍎'],
 ];
+
+// Artigo definido de cada palavra, para a frase-veículo do TTS. Fora da
+// tabela: termina em a/ã → "a", senão "o" (cobre as listas A, B, C e reserva).
+const ARTIGOS = {flor:'a', chave:'a', colher:'a', meia:'a', mesa:'a', cadeira:'a',
+                 boneca:'a', vaca:'a', galinha:'a', bolacha:'a', banana:'a', bola:'a',
+                 'maçã':'a', maca:'a'};
+function artigoDe(p){
+  p = (p||'').toLowerCase().trim();
+  if(p in ARTIGOS) return ARTIGOS[p];
+  return /[aã]$/.test(p) ? 'a' : 'o';
+}
+function montaFrase(modelo, alvo){
+  return modelo.replaceAll('{art}', artigoDe(alvo)).replaceAll('{alvo}', alvo);
+}
 function protocoloPadrao(){
   const linhas=[];
   for(const [a,b,ia,ib] of PARES){
@@ -505,7 +520,7 @@ async function runSession(){
     await esperaAte(t0 + gapMs/1000);          // fim do baseline / início da frase
 
     if(modoTTS){
-      const r = await falaTTS($('carrier').value.replaceAll('{alvo}', tr.alvo), tr.alvo);
+      const r = await falaTTS(montaFrase($('carrier').value, tr.alvo), tr.alvo);
       logEvent(Object.assign({}, meta, {trial:i+1, alvo:tr.alvo, ladoAlvo:tr.side,
         fase:'tts_fronteira',
         alvo_apos_bipe_ms: r.tAlvo===null ? '' : Math.round((r.tAlvo - (recT0||0)) - (t0-(ac.currentTime))*0),
@@ -599,7 +614,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   $('testAudioBtn').addEventListener('click', async ()=>{
     await ensureAC();
     agendaBipe(ac.currentTime+0.1);
-    if($('useTTS').checked) setTimeout(()=> falaTTS($('carrier').value.replaceAll('{alvo}','gato'),'gato'), 500);
+    if($('useTTS').checked) setTimeout(()=> falaTTS(montaFrase($('carrier').value,'gato'),'gato'), 500);
   });
   $('startBtn').addEventListener('click', ()=>{
     window._basename = `LWL_${$('pid').value||'anon'}_${stamp()}`;
