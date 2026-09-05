@@ -379,6 +379,9 @@ const $ = id => document.getElementById(id);
 const agora = () => performance.now();
 const dormir = ms => new Promise(r => setTimeout(r, ms));
 const BASE = '../apresentador/';
+// ?lista=B usa protocolo_B.txt (pares novos, mesmo gênero dentro do par).
+const LISTA = (new URLSearchParams(location.search).get('lista') || 'A').toUpperCase();
+const ARQ_PROTOCOLO = LISTA === 'A' ? 'protocolo.txt' : `protocolo_${LISTA}.txt`;
 const BEEP_HZ = 1000, BEEP_MS = 80, BEEP_GAIN = 0.25;
 
 let camStream = null, gravador = null, pedacos = [], videoBlob = null;
@@ -407,10 +410,10 @@ function marca(id, estado, texto){
 
 /* ---------------------------- protocolo ---------------------------- */
 async function carregarProtocolo(){
-  const r = await fetch(BASE + 'protocolo.txt', {cache:'no-store'});
-  if(!r.ok) throw new Error('protocolo.txt não encontrado (' + r.status + ')');
+  const r = await fetch(BASE + ARQ_PROTOCOLO, {cache:'no-store'});
+  if(!r.ok) throw new Error(ARQ_PROTOCOLO + ' não encontrado (' + r.status + ')');
   const txt = (await r.text()).trim();
-  if(!txt) throw new Error('protocolo.txt vazio');
+  if(!txt) throw new Error(ARQ_PROTOCOLO + ' vazio');
   $('trials').value = txt;
   protocoloOk = true;
 }
@@ -641,7 +644,7 @@ async function rodar(){
 
   eventos = []; abortado = false; pausado = false;
   const pid = ($('pid').value || 'anon').trim();
-  const meta = {pid, idade_meses: ($('idade').value||'').trim(), ordem: $('ordem').value, modo_audio: 'arquivo'};
+  const meta = {pid, idade_meses: ($('idade').value||'').trim(), ordem: $('ordem').value + '/' + LISTA, modo_audio: 'arquivo'};
   const tFix=+$('tFix').value, tPre=+$('tPre').value, tPost=+$('tPost').value,
         tIti=+$('tIti').value, nBreak=+$('tBreak').value;
 
