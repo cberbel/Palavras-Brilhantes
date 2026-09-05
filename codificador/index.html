@@ -21,6 +21,7 @@
   button.pri{background:var(--accent);color:#04203f;border-color:transparent}
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   video{width:100%;max-height:52vh;background:#000;border-radius:10px;display:block}
+  video.espelhado{transform:scaleX(-1)}
   #barra{width:100%;height:34px;border-radius:6px;background:#222;margin-top:8px;display:block}
   .teclas{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
   .tecla{padding:8px 14px;border-radius:8px;font-size:14px;font-weight:600;border:2px solid transparent}
@@ -53,6 +54,17 @@
       O apresentador mostra a taxa efetiva na tela de configuração.</small>
   </fieldset>
 
+  <div class="row" style="margin:6px 0">
+    <label style="display:flex;align-items:center;gap:6px;font-size:13px">
+      <input type="checkbox" id="espelho" checked style="width:auto">
+      espelhar o vídeo (como num espelho: a esquerda da criança fica à sua esquerda)
+    </label>
+    <small class="hint" style="margin:0">
+      Convenção: <b>A = esquerda DA CRIANÇA = figura da esquerda na tela</b>. O vídeo
+      da webcam é gravado sem espelho — quem olha para a figura da esquerda aparece
+      olhando para a SUA direita. Com o espelho ligado, esquerda é esquerda.
+    </small>
+  </div>
   <video id="v" controls></video>
   <canvas id="barra"></canvas>
 
@@ -97,27 +109,58 @@
 const $ = id => document.getElementById(id);
 const v = $('v');
 let marcas = [];          // {t_ms, olhar} ordenado por tempo
+let historico = [];       // cópias de `marcas` antes de cada mudança, para desfazer
 let dur = 0;
 
 const CORES = {left:'#e8703a', right:'#4da3ff', away:'#777', incerto:'#c060c0'};
 const passo = () => 1 / Math.max(1, +$('fps').value);
 
 /* ---------- vídeo ---------- */
+/* O .webm que o MediaRecorder grava não tem a duração no cabeçalho: o Chrome
+   reporta duration = Infinity (bug 642012). Sem tratar isso, a exportação
+   entrava num laço infinito e a aba congelava. O truque padrão: pular para um
+   instante absurdo força o navegador a varrer o arquivo e descobrir o fim. */
+function descobreDuracao(){
+  return new Promise(resolve => {
+    if (Number.isFinite(v.duration) && v.duration > 0){ resolve(v.duration); return; }
+    const fim = () => {
+      if (Number.isFinite(v.duration) && v.duration > 0){
+        v.removeEventListener('durationchange', fim);
+        v.currentTime = 0;
+        resolve(v.duration);
+      }
+    };
+    v.addEventListener('durationchange', fim);
+    v.currentTime = 1e101;
+    setTimeout(() => { if (!Number.isFinite(v.duration)) { v.removeEventListener('durationchange', fim); resolve(0); } }, 8000);
+  });
+}
+
 $('arq').addEventListener('change', e => {
   const f = e.target.files[0];
   if (!f) return;
   v.src = URL.createObjectURL(f);
-  marcas = []; render();
-  v.addEventListener('loadedmetadata', () => {
-    dur = v.duration;
-    $('info').textContent = `${dur.toFixed(1)} s · ${Math.round(dur*(+$('fps').value))} quadros`;
+  marcas = []; historico = []; render();
+  $('info').textContent = 'lendo o vídeo…';
+  v.addEventListener('loadedmetadata', async () => {
+    dur = await descobreDuracao();
+    if (!dur){
+      $('info').textContent = 'não consegui descobrir a duração — converta o vídeo antes (3-PROCESSAR SESSAO.cmd faz isso)';
+    } else {
+      $('info').textContent = `${dur.toFixed(1)} s · ${Math.round(dur*(+$('fps').value))} quadros`;
+    }
     render();
+    // devolve o foco ao documento: senão as teclas A/D/X vão para o <input type=file>
+    e.target.blur();
   }, {once:true});
 });
+$('espelho').addEventListener('change', () => v.classList.toggle('espelhado', $('espelho').checked));
+v.classList.add('espelhado');
 
 function marca(olhar){
   if (!v.src) return;
   const t = Math.round(v.currentTime * 1000);
+  historico.push(marcas.slice());
   marcas = marcas.filter(m => m.t_ms !== t);
   marcas.push({t_ms:t, olhar});
   marcas.sort((a,b) => a.t_ms - b.t_ms);
@@ -140,7 +183,7 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'ArrowRight'){ v.pause(); v.currentTime = Math.min(dur, v.currentTime + d*passo()); e.preventDefault(); }
   else if (e.key === 'ArrowLeft'){ v.pause(); v.currentTime = Math.max(0, v.currentTime - d*passo()); e.preventDefault(); }
   else if (e.key === ' '){ v.paused ? v.play() : v.pause(); e.preventDefault(); }
-  else if (e.key === 'Backspace'){ marcas.pop(); render(); e.preventDefault(); }
+  else if (e.key === 'Backspace'){ if (historico.length) marcas = historico.pop(); render(); e.preventDefault(); }
 });
 v.addEventListener('timeupdate', desenhaBarra);
 
@@ -174,8 +217,10 @@ function render(){
    que é o formato que o analisar.py e o iCatcher+/OWLET usam.                */
 $('exportar').addEventListener('click', () => {
   if (!marcas.length){ alert('Nada codificado ainda.'); return; }
+  if (!Number.isFinite(dur) || dur <= 0){ alert('Duração do vídeo desconhecida — não dá para exportar.'); return; }
   const dt = 1000 * passo();
-  const linhas = ['t_ms,olhar'];
+  // a convenção vai no arquivo, como comentário, para o analisador e para quem ler
+  const linhas = ['# convencao=esquerda_da_crianca (left = figura da esquerda na tela)', 't_ms,olhar'];
   let i = 0, atual = marcas[0].olhar;
   for (let t = marcas[0].t_ms; t <= dur*1000; t += dt){
     while (i+1 < marcas.length && marcas[i+1].t_ms <= t){ i++; atual = marcas[i].olhar; }
@@ -189,11 +234,11 @@ $('exportar').addEventListener('click', () => {
   setTimeout(()=> URL.revokeObjectURL(a.href), 5000);
 });
 
-$('limpar').addEventListener('click', () => { if (confirm('Apagar todas as marcas?')){ marcas = []; render(); } });
+$('limpar').addEventListener('click', () => { if (confirm('Apagar todas as marcas?')){ historico.push(marcas.slice()); marcas = []; render(); } });
 
 /* ---------- concordância ---------- */
 function leCSV(txt){
-  const linhas = txt.trim().split(/\r?\n/);
+  const linhas = txt.trim().split(/\r?\n/).filter(l => !l.startsWith('#'));
   const cab = linhas[0].split(',').map(s => s.trim().toLowerCase());
   const it = cab.findIndex(c => ['t_ms','time_ms','timestamp_ms','t'].includes(c));
   const ig = cab.findIndex(c => ['olhar','gaze','look','annotation','direcao'].includes(c));
@@ -226,7 +271,10 @@ $('comparar').addEventListener('click', async () => {
   if (!fm || !fa){ $('res').textContent = 'Selecione os dois arquivos.'; return; }
   try{
     const man = leCSV(await fm.text()), aut = leCSV(await fa.text());
-    const tol = 1000*passo()/2;
+    // tolerância = metade do intervalo típico do arquivo automático, medido nele
+    // mesmo (não no fps digitado, que pode não ser a taxa efetiva da gravação)
+    const ds = aut.slice(1).map((p,i) => p[0]-aut[i][0]).filter(d => d > 0).sort((a,b)=>a-b);
+    const tol = ds.length ? ds[ds.length>>1]/2 : 1000*passo()/2;
     const cls = ['left','right','away'];
     const mat = [[0,0,0],[0,0,0],[0,0,0]];
     let n = 0, iguais = 0;
