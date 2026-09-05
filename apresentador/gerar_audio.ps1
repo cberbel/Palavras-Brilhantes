@@ -41,6 +41,36 @@ $palavras = @(
   @{ nome = "livro";    artigo = "o" }
   @{ nome = "pato";     artigo = "o" }
   @{ nome = [string]([char]0x6D + [char]0x61 + [char]0xE7 + [char]0xE3); artigo = "a" }  # maçã
+
+  # --- 26 palavras novas (listas B, C e reserva do montar_protocolo.py) ---
+  # Dentro de cada par os dois itens tem o MESMO genero: o artigo nao pode
+  # entregar o alvo antes do substantivo.
+  @{ nome = "copo";     artigo = "o" }
+  @{ nome = "peixe";    artigo = "o" }
+  @{ nome = "cavalo";   artigo = "o" }
+  @{ nome = [string]("p" + [char]0xE3 + "o");            artigo = "o" }  # pão
+  @{ nome = "boneca";   artigo = "a" }
+  @{ nome = "cadeira";  artigo = "a" }
+  @{ nome = "vaca";     artigo = "a" }
+  @{ nome = "mesa";     artigo = "a" }
+  @{ nome = "carro";    artigo = "o" }
+  @{ nome = "menino";   artigo = "o" }
+  @{ nome = [string]("beb" + [char]0xEA);                artigo = "o" }  # bebê
+  @{ nome = [string]("avi" + [char]0xE3 + "o");          artigo = "o" }  # avião
+  @{ nome = "flor";     artigo = "a" }
+  @{ nome = "galinha";  artigo = "a" }
+  @{ nome = "meia";     artigo = "a" }
+  @{ nome = "bolacha";  artigo = "a" }
+  @{ nome = "trem";     artigo = "o" }
+  @{ nome = "ursinho";  artigo = "o" }
+  @{ nome = "colher";   artigo = "a" }
+  @{ nome = "chave";    artigo = "a" }
+  @{ nome = "sapo";     artigo = "o" }
+  @{ nome = "bolo";     artigo = "o" }
+  @{ nome = "ovo";      artigo = "o" }
+  @{ nome = [string]("rel" + [char]0xF3 + "gio");        artigo = "o" }  # relógio
+  @{ nome = [string]("le" + [char]0xE3 + "o");           artigo = "o" }  # leão
+  @{ nome = [string]("chap" + [char]0xE9 + "u");         artigo = "o" }  # chapéu
 )
 # "Cadê" escrito por código de caractere: este arquivo precisa continuar legível
 # mesmo se for reaberto por um editor que erre a codificação.

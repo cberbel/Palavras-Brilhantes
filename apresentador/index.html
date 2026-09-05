@@ -460,7 +460,7 @@ async function runSession(){
   await sleep(800); // deixa o gravador estabilizar antes do primeiro bipe
 
   const pid = $('pid').value||'anon';
-  const meta = {pid, idade_meses:$('age').value||'', ordem:$('ordem').value,
+  const meta = {pid, idade_meses:$('age').value||'', ordem:$('ordem').value + '/' + LISTA,
                 modo_audio: modoTTS?'tts':'arquivo'};
   const tFix=+$('tFix').value, tPre=+$('tPre').value, tPost=+$('tPost').value,
         tIti=+$('tIti').value, nBreak=+$('tBreak').value;
@@ -557,9 +557,13 @@ function stamp(){ const d=new Date(), p=n=>String(n).padStart(2,'0');
 // Carrega protocolo.txt (gerado pelo montar_protocolo.py) se existir. É ele que
 // traz os caminhos das imagens, os áudios e os onsets medidos. Sem ele, cai no
 // protocolo de emoji, que só serve para testar o fluxo.
+// ?lista=B carrega protocolo_B.txt (listas B/C = pares novos, mesmo gênero
+// dentro do par; ver montar_protocolo.py). Sem parâmetro, protocolo.txt (lista A).
+const LISTA = (new URLSearchParams(location.search).get('lista') || 'A').toUpperCase();
+const ARQ_PROTOCOLO = LISTA === 'A' ? 'protocolo.txt' : `protocolo_${LISTA}.txt`;
 async function carregaProtocolo(){
   try{
-    const r = await fetch('protocolo.txt', {cache:'no-store'});
+    const r = await fetch(ARQ_PROTOCOLO, {cache:'no-store'});
     if(!r.ok) throw new Error(r.status);
     const txt = (await r.text()).trim();
     if(!txt) throw new Error('vazio');
@@ -567,13 +571,13 @@ async function carregaProtocolo(){
     $('useTTS').checked = false;
     $('avisoTTS').style.display = 'none';
     const n = txt.split('\n').filter(Boolean).length;
-    return `protocolo.txt carregado: ${n} trials com áudio gravado.`;
+    return `${ARQ_PROTOCOLO} carregado (lista ${LISTA}): ${n} trials com áudio gravado.`;
   }catch(e){
     $('trials').value = protocoloPadrao();
     $('useTTS').checked = true;
     $('avisoTTS').style.display = 'block';
-    return 'Sem protocolo.txt — usando emoji e TTS (modo demonstração, ' +
-           'tempo de reação inválido). Rode gerar_audio.ps1 e montar_protocolo.py.';
+    return `Sem ${ARQ_PROTOCOLO} — usando emoji e TTS (modo demonstração, ` +
+           'tempo de reação inválido). Rode gerar_audio.ps1 e montar_protocolo.py' + (LISTA==='A' ? '.' : ` --lista ${LISTA}.`);
   }
 }
 

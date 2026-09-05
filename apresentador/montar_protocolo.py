@@ -19,12 +19,43 @@ import numpy as np
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 
-# (alvo, distrator) — os dois que aparecem juntos na tela
-PARES = [("gato", "banana"), ("bola", "sapato"),
-         ("cachorro", "livro"), ("pato", "maçã")]
+# (alvo, distrator) — os dois que aparecem juntos na tela.
+#
+# LISTAS: cada lista dá uma sessão de 32 trials (4 pares × 8). Uma criança de
+# 18–30 meses não aguenta mais que isso; por isso os 17 pares não entram todos
+# na mesma sessão. A lista A é a original. B e C usam os 10 pares novos
+# (fotos geradas em 05/09/2026); "reserva" guarda 5 pares extras para
+# substituir um par que a criança não conheça.
+#
+# Regra nova nas listas B e C: os dois itens do par têm o MESMO GÊNERO
+# gramatical. Na lista A, em 3 dos 4 pares o artigo ("Cadê O gato?" vs.
+# "Cadê A banana?") já entrega o alvo ~150 ms antes do substantivo — a criança
+# pode virar o olhar pelo artigo, e isso vira RT curto sem ser processamento da
+# palavra (Lew-Williams & Fernald, 2007, mostraram exatamente esse efeito em
+# espanhol). Em B e C o artigo não informa nada; só a palavra-alvo informa.
+LISTAS = {
+    "A": [("gato", "banana"), ("bola", "sapato"),
+          ("cachorro", "livro"), ("pato", "maçã")],
+    "B": [("copo", "peixe"), ("cavalo", "pão"),
+          ("boneca", "cadeira"), ("vaca", "mesa")],
+    "C": [("carro", "menino"), ("bebê", "sapo"),
+          ("flor", "galinha"), ("meia", "bolacha")],
+    # avião saiu da lista C: é fino demais (8% de tinta) e obrigava o bebê a
+    # encolher junto. Foi para a reserva com um par compacto (bolo).
+    "reserva": [("trem", "ursinho"), ("colher", "chave"), ("avião", "bolo"),
+                ("ovo", "relógio"), ("leão", "chapéu")],
+}
+PARES = LISTAS["A"]
 
 IMAGEM = {"gato": "gato", "bola": "bola", "cachorro": "cachorro", "sapato": "sapato",
-          "banana": "banana", "livro": "livro", "pato": "pato", "maçã": "maca"}
+          "banana": "banana", "livro": "livro", "pato": "pato", "maçã": "maca",
+          "copo": "copo", "peixe": "peixe", "cavalo": "cavalo", "pão": "pao",
+          "boneca": "boneca", "cadeira": "cadeira", "vaca": "vaca", "mesa": "mesa",
+          "carro": "carro", "menino": "menino", "bebê": "bebe", "avião": "aviao",
+          "flor": "flor", "galinha": "galinha", "meia": "meia", "bolacha": "bolacha",
+          "trem": "trem", "ursinho": "ursinho", "colher": "colher", "chave": "chave",
+          "sapo": "sapo", "bolo": "bolo", "ovo": "ovo", "relógio": "relogio",
+          "leão": "leao", "chapéu": "chapeu"}
 
 FRAME_MS = 10
 LIMIAR = 0.15        # fração do pico de RMS que conta como "som"
@@ -110,7 +141,25 @@ def main() -> None:
     ap.add_argument("--saida", default=os.path.join(AQUI, "protocolo.txt"))
     ap.add_argument("--tolerancia", type=float, default=60.0,
                     help="divergência máxima aceita, em ms")
+    ap.add_argument("--lista", default="A", choices=sorted(LISTAS),
+                    help="qual lista de pares vira o protocolo (A = original)")
+    ap.add_argument("--pares", nargs="*", default=None,
+                    help="pares avulsos no formato alvo:distrator (substitui --lista)")
     a = ap.parse_args()
+
+    pares = LISTAS[a.lista]
+    if a.pares:
+        pares = [tuple(p.split(":", 1)) for p in a.pares]
+    if a.lista != "A" and a.saida == os.path.join(AQUI, "protocolo.txt"):
+        a.saida = os.path.join(AQUI, f"protocolo_{a.lista}.txt")
+    faltam = sorted({x for par in pares for x in par if x not in IMAGEM})
+    if faltam:
+        raise SystemExit(f"Sem imagem cadastrada para: {', '.join(faltam)}")
+    for par in pares:
+        for x in par:
+            img = os.path.join(AQUI, "estimulos", "imagens", IMAGEM[x] + ".png")
+            if not os.path.exists(img):
+                raise SystemExit(f"Falta a imagem {img}")
 
     idx = os.path.join(a.audio, "onsets.csv")
     if not os.path.exists(idx):
@@ -126,7 +175,10 @@ def main() -> None:
     print("-" * 68)
     suspeitos: list[str] = []
     corrigidos: list[str] = []
+    usados = {x for par in pares for x in par}
     for (alvo, var), r in sorted(clipes.items()):
+        if alvo not in usados:
+            continue
         caminho = os.path.join(AQUI, r["arquivo"].replace("/", os.sep))
         rms, _ = rms_frames(caminho)
         onset = float(r["onset_ms"])
@@ -171,7 +223,7 @@ def main() -> None:
     else:
         print("Em todos os clipes o alvo é a última palavra, com som presente "
               "no instante usado.\n")
-    print("Ouça os 16 clipes uma vez antes de coletar dados. A verificação aqui é "
+    print("Ouça os clipes desta lista uma vez antes de coletar dados. A verificação aqui é "
           "de tempo,\nnão de pronúncia — só o ouvido humano detecta uma palavra "
           "mal falada pela síntese.\n")
 
@@ -179,7 +231,12 @@ def main() -> None:
     # Cada palavra é alvo 4 vezes: 2 à esquerda e 2 à direita, alternando as
     # duas variantes de frase para a sessão não ficar repetitiva.
     linhas = []
-    for x, y in PARES:
+    sem_audio = sorted({x for par in pares for x in par
+                        if (x, "a") not in clipes or (x, "b") not in clipes})
+    if sem_audio:
+        raise SystemExit("Faltam os áudios de: " + ", ".join(sem_audio) +
+                         ". Rode gerar_audio.ps1 (ele já inclui as palavras novas).")
+    for x, y in pares:
         for alvo, distr in ((x, y), (y, x)):
             for i, lado in enumerate(("esquerda", "direita", "esquerda", "direita")):
                 var = "a" if i < 2 else "b"
