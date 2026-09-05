@@ -44,24 +44,54 @@ def sinal():
     return x
 
 
-def main():
-    x = sinal()
-    tempos, razao = energia_no_tom(x, SR, BEEP_HZ)
-    achados, margem = acha_bipes(tempos, razao, len(POSICOES))
-
-    print(f"Esperados : {len(POSICOES)}")
-    print(f"Detectados: {len(achados)}  (margem {margem:.2f}x)")
-
-    falhas = []
-    if len(achados) != len(POSICOES):
-        falhas.append(f"contagem: {len(achados)} != {len(POSICOES)}")
-
-    for esp, got in zip(POSICOES, achados):
+def confere(rotulo, achados, margem, esperados, falhas):
+    print(f"--- {rotulo}")
+    print(f"Esperados : {len(esperados)}")
+    n_ok = sum(1 for a in achados if a is not None)
+    print(f"Detectados: {n_ok}  (margem {margem:.2f}x)")
+    if len(achados) != len(esperados):
+        falhas.append(f"{rotulo}: contagem {len(achados)} != {len(esperados)}")
+    for esp, got in zip(esperados, achados):
+        if esp is None:
+            marca = "ok " if got is None else "FALHA"
+            print(f"[{marca}] trial sem bipe → achado {got}")
+            if got is not None:
+                falhas.append(f"{rotulo}: inventou bipe em {got:.3f}s")
+            continue
+        if got is None:
+            print(f"[FALHA] esperado {esp:6.3f}s  achado nenhum")
+            falhas.append(f"{rotulo}: {esp}s não achado")
+            continue
         erro = abs(got - esp) * 1000
         marca = "ok " if erro <= TOL_MS else "FALHA"
         print(f"[{marca}] esperado {esp:6.3f}s  achado {got:6.3f}s  erro {erro:5.1f} ms")
         if erro > TOL_MS:
-            falhas.append(f"{esp}s erro {erro:.0f} ms")
+            falhas.append(f"{rotulo}: {esp}s erro {erro:.0f} ms")
+
+
+def main():
+    x = sinal()
+    tempos, razao = energia_no_tom(x, SR, BEEP_HZ)
+    falhas = []
+
+    # 1) sem log: pega os N picos mais fortes
+    achados, margem, _ = acha_bipes(tempos, razao, len(POSICOES))
+    confere("sem log (top-N)", achados, margem, POSICOES, falhas)
+
+    # 2) guiado pelo log: tempos aproximados com deslocamento constante de
+    #    +1,3 s (o vídeo começou antes do apresentador) e erro de ±60 ms
+    rng = np.random.default_rng(3)
+    aprox = [(p + 1.3 + rng.uniform(-0.06, 0.06)) * 1000 for p in POSICOES]
+    achados, margem, _ = acha_bipes(tempos, razao, len(POSICOES), esperados_ms=aprox)
+    confere("guiado pelo log", achados, margem, POSICOES, falhas)
+
+    # 3) guiado, mas o log tem um trial a mais cujo bipe não está no áudio
+    #    (a gravação parou antes): tem de devolver None nesse trial e acertar
+    #    os outros, sem deslocar o pareamento
+    aprox2 = aprox[:5] + [(43.25 + 1.3) * 1000] + aprox[5:]
+    esp2 = POSICOES[:5] + [None] + POSICOES[5:]
+    achados, margem, _ = acha_bipes(tempos, razao, len(esp2), esperados_ms=aprox2)
+    confere("guiado, 1 bipe faltando", achados, margem, esp2, falhas)
 
     print()
     if falhas:
