@@ -100,10 +100,14 @@ inversão de espelhamento.
 
 Clique em **Baixar anotacoes_manuais.csv** e salve na mesma pasta da sessão.
 
-> **Esquerda é do seu ponto de vista olhando a tela**, não do vídeo espelhado.
-> A prévia da câmera aparece espelhada, como um espelho de banheiro — se você olhou para
-> a figura à sua esquerda, marque **A**, mesmo que no vídeo pareça o contrário.
-> Esta convenção é a mesma que o codificador automático usa.
+> **A = esquerda de quem está na frente da tela = figura da esquerda.** A webcam grava
+> sem espelho, então no vídeo cru quem olha para a figura da esquerda aparece olhando para
+> a SUA direita. Por isso o codificador abre o vídeo **espelhado** (caixa "espelhar o
+> vídeo", ligada por padrão): com ela ligada, esquerda no vídeo é esquerda na tela — se
+> você olhou para a figura da esquerda, o olhar no vídeo aponta para a esquerda, marque **A**.
+> O CSV exportado registra essa convenção na primeira linha (`# convencao=...`).
+> Um codificador automático (OWLET/iCatcher+) trabalha no vídeo cru, e a saída dele pode
+> vir invertida — é exatamente o que o teste de espelhamento pega.
 
 ---
 
@@ -141,5 +145,5 @@ mesmo vídeo. Como você já tem a codificação manual da mesma gravação, a t
 comparação do codificador dá na hora a concordância e o kappa entre os dois — e você
 descobre se o automático serve, no seu setup, antes de depender dele.
 
-E ouça os 16 clipes de áudio uma vez. A verificação automática confere tempo, não
+E ouça os clipes de áudio uma vez. A verificação automática confere tempo, não
 pronúncia.

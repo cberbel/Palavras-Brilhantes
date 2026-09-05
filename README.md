@@ -21,8 +21,8 @@ mede, o que ele não é, e o que fazer para que a medida seja válida.
 | Peça | Situação |
 |---|---|
 | `apresentador/index.html` | pronto — 32 trials, áudio agendado, bipe por trial |
-| `apresentador/estimulos/imagens/` | pronto — 8 **fotos reais**, pares equilibrados em área e cor |
-| `apresentador/estimulos/audio/` | pronto — 16 clipes com onset verificado |
+| `apresentador/estimulos/imagens/` | pronto — 8 fotos reais (lista A) + 26 geradas (listas B, C, reserva), pares equilibrados em área e cor |
+| `apresentador/estimulos/audio/` | lista A: 16 clipes TTS (onset marcado no gerar_audio, artigo repetido dentro do par — ver REVISAO B1/B2). Listas B/C: **falta rodar** `gerar_audio.ps1` |
 | `analisador/sincronizar.py` | pronto — bipes localizados com 5–10 ms de erro |
 | `analisador/analisar.py` | pronto — TR, acurácia, baseline, exclusões |
 | `codificador/index.html` | pronto — codificação manual e concordância (kappa) |
@@ -97,7 +97,7 @@ python apresentador/montar_protocolo.py
 Confere os onsets contra o áudio, corrige o que não bater e escreve o `protocolo.txt`
 com os 32 trials.
 
-**Ouça os 16 clipes uma vez.** A verificação automática é de tempo, não de pronúncia.
+**Ouça os clipes uma vez.** A verificação automática é de tempo, não de pronúncia.
 
 ---
 
@@ -155,7 +155,9 @@ perto de cem. Se acontecer sem você perceber, você joga fora dados de criança
 
 Concordância alta e na direção certa: pode seguir. Concordância perto de zero com a
 matriz de confusão trocando esquerda por direita: o espelhamento está invertido, e é só
-inverter o mapeamento na conversão da saída do codificador automático.
+inverter o mapeamento na conversão da saída do codificador automático. No codificador
+manual a convenção é fixa: **A = figura da esquerda na tela** (o vídeo abre espelhado
+para que esquerda seja esquerda).
 
 ---
 
